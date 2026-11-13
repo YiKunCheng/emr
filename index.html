@@ -1,0 +1,2701 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>隨身電子病歷 | Portable Personal Health Record</title>
+  <!-- Google Fonts for Multi-language Typography -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;700&family=Noto+Sans+KR:wght@400;500;700&family=Noto+Sans+TC:wght@400;500;600;700&family=Noto+Sans+Thai:wght@400;500;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+  
+  <style>
+    /* ==========================================================================
+       1. EARTH-TONE DESIGN TOKENS & CLINICAL CLARITY VARIABLES
+       ========================================================================== */
+    :root {
+      /* Earth-Tone Palette (大地色系) */
+      --bg-primary: #F6F3EC;          /* 燕麥暖白 Warm Alabaster / Oatmeal */
+      --bg-secondary: #EFEAE0;        /* 淺亞麻灰 Warm Linen */
+      --card-surface: #FFFDF9;        /* 柔象牙白 Soft Ivory Cream */
+      --card-hover: #FAF6EE;          /* 暖米色卡片懸停 */
+      --border-warm: #E2DAC9;         /* 大地暖沙邊框 */
+      --border-strong: #CBBFA8;       /* 深沙色強調邊框 */
+
+      /* Accent Colors */
+      --accent-terracotta: #B86B4B;   /* 赤陶暖棕 Terracotta Clay */
+      --accent-terracotta-dark: #965236;
+      --accent-terracotta-soft: #F5E8E2;
+      --accent-sage: #556B53;         /* 鼠尾草深綠 Deep Sage / Olive */
+      --accent-sage-soft: #E7EFE6;
+      --accent-ochre: #C48F45;        /* 琥珀赭石 Warm Ochre */
+      --accent-ochre-soft: #F9F1E3;
+
+      /* Clinical Alert & Triage Colors */
+      --alert-crimson: #A8383B;       /* 磚紅警示 Muted Crimson Clay */
+      --alert-bg: #FDF3F2;            /* 柔和暖紅背景 */
+      --alert-border: #E8C0BF;
+
+      /* Typography Colors */
+      --text-primary: #2C2623;        /* 濃縮咖啡深炭色 Deep Espresso Charcoal */
+      --text-secondary: #685E57;      /* 暖灰褐 Warm Taupe */
+      --text-muted: #8C827A;          /* 淺焙可可灰 Muted Stone */
+
+      /* Spacing & Elevation */
+      --radius-lg: 18px;
+      --radius-md: 12px;
+      --radius-sm: 8px;
+      --shadow-soft: 0 8px 24px -6px rgba(44, 38, 35, 0.06), 0 2px 6px -1px rgba(44, 38, 35, 0.04);
+      --shadow-elevated: 0 14px 32px -8px rgba(44, 38, 35, 0.12), 0 4px 12px -2px rgba(44, 38, 35, 0.06);
+      --transition-smooth: all 0.25s cubic-bezier(0.25, 0.8, 0.25, 1);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-primary);
+      background-image: 
+        radial-gradient(at 10% 10%, rgba(184, 107, 75, 0.06) 0px, transparent 50%),
+        radial-gradient(at 90% 20%, rgba(85, 107, 83, 0.06) 0px, transparent 50%),
+        radial-gradient(at 50% 90%, rgba(196, 143, 69, 0.05) 0px, transparent 50%);
+      color: var(--text-primary);
+      font-family: 'Inter', 'Noto Sans TC', 'Noto Sans JP', 'Noto Sans KR', 'Noto Sans Thai', -apple-system, BlinkMacSystemFont, sans-serif;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      padding-bottom: 4rem;
+    }
+
+    /* ==========================================================================
+       2. TOP STICKY NAVIGATION & MULTI-LANGUAGE CONTROL BAR
+       ========================================================================== */
+    .top-bar {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(246, 243, 236, 0.92);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border-warm);
+      padding: 0.75rem 1.25rem;
+      box-shadow: 0 4px 16px rgba(44, 38, 35, 0.04);
+    }
+
+    .top-bar-inner {
+      max-width: 1240px;
+      margin: 0 auto;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+    }
+
+    .brand-cluster {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .brand-emblem {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, var(--accent-terracotta), #9E5234);
+      color: #FFFDF9;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      box-shadow: 0 4px 10px rgba(184, 107, 75, 0.28);
+      flex-shrink: 0;
+    }
+
+    .brand-title-wrap h1 {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      letter-spacing: -0.01em;
+    }
+
+    .brand-title-wrap p {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+    }
+
+    /* Language Selector Pills */
+    .lang-bar {
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      flex-wrap: wrap;
+      background: var(--bg-secondary);
+      padding: 0.3rem;
+      border-radius: 999px;
+      border: 1px solid var(--border-warm);
+    }
+
+    .lang-btn {
+      border: none;
+      background: transparent;
+      color: var(--text-secondary);
+      font-size: 0.8rem;
+      font-weight: 600;
+      padding: 0.38rem 0.75rem;
+      border-radius: 999px;
+      cursor: pointer;
+      transition: var(--transition-smooth);
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      font-family: inherit;
+    }
+
+    .lang-btn:hover {
+      color: var(--text-primary);
+      background: rgba(255, 253, 249, 0.6);
+    }
+
+    .lang-btn.active {
+      background: var(--accent-terracotta);
+      color: #FFFDF9;
+      box-shadow: 0 2px 8px rgba(184, 107, 75, 0.35);
+    }
+
+    /* Action Buttons Group */
+    .utility-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .btn-action {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.45rem 0.85rem;
+      border-radius: 10px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: var(--transition-smooth);
+      border: 1px solid var(--border-strong);
+      background: var(--card-surface);
+      color: var(--text-primary);
+      font-family: inherit;
+    }
+
+    .btn-action:hover {
+      background: var(--bg-secondary);
+      border-color: var(--accent-terracotta);
+    }
+
+    .btn-action.active-toggle {
+      background: var(--accent-sage);
+      color: #FFFDF9;
+      border-color: var(--accent-sage);
+    }
+
+    .btn-sos {
+      background: var(--alert-bg);
+      color: var(--alert-crimson);
+      border-color: var(--alert-border);
+      font-weight: 700;
+    }
+
+    .btn-sos:hover, .btn-sos.active-sos {
+      background: var(--alert-crimson);
+      color: #FFFDF9;
+      border-color: var(--alert-crimson);
+      box-shadow: 0 4px 12px rgba(168, 56, 59, 0.3);
+    }
+
+    /* ==========================================================================
+       3. MAIN CONTAINER & HERO PATIENT PASSPORT HEADER
+       ========================================================================== */
+    .main-container {
+      max-width: 1240px;
+      margin: 1.5rem auto 0;
+      padding: 0 1.25rem;
+    }
+
+    /* Doctor Communication Banner */
+    .doctor-greeting-card {
+      background: linear-gradient(135deg, #EDE6D6 0%, #F7F3EB 100%);
+      border: 1px solid var(--border-strong);
+      border-left: 5px solid var(--accent-terracotta);
+      border-radius: var(--radius-md);
+      padding: 1rem 1.25rem;
+      margin-bottom: 1.5rem;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 1rem;
+      box-shadow: var(--shadow-soft);
+    }
+
+    .doctor-greeting-text h2 {
+      font-size: 0.98rem;
+      font-weight: 700;
+      color: var(--accent-terracotta-dark);
+      margin-bottom: 0.2rem;
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+    }
+
+    .doctor-greeting-text p {
+      font-size: 0.88rem;
+      color: var(--text-primary);
+    }
+
+    .last-updated-pill {
+      font-size: 0.76rem;
+      color: var(--text-secondary);
+      background: var(--card-surface);
+      padding: 0.3rem 0.65rem;
+      border-radius: 999px;
+      border: 1px solid var(--border-warm);
+      white-space: nowrap;
+      align-self: center;
+    }
+
+    /* Patient Identity & Triage Card */
+    .patient-hero {
+      background: var(--card-surface);
+      border: 1px solid var(--border-warm);
+      border-radius: var(--radius-lg);
+      padding: 1.75rem;
+      box-shadow: var(--shadow-soft);
+      margin-bottom: 1.5rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .patient-hero::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 6px;
+      background: linear-gradient(90deg, var(--accent-terracotta), var(--accent-ochre), var(--accent-sage));
+    }
+
+    .hero-top-row {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1.5rem;
+      padding-bottom: 1.5rem;
+      border-bottom: 1px dashed var(--border-warm);
+    }
+
+    .patient-identity {
+      display: flex;
+      align-items: center;
+      gap: 1.25rem;
+    }
+
+    .avatar-circle {
+      width: 78px;
+      height: 78px;
+      border-radius: 20px;
+      background: linear-gradient(145deg, #E8DFCE, #D5C7B2);
+      border: 2px solid var(--accent-terracotta);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--accent-terracotta-dark);
+      flex-shrink: 0;
+      box-shadow: inset 0 2px 4px rgba(255,255,255,0.6);
+    }
+
+    .patient-name-block h2 {
+      font-size: 1.65rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      letter-spacing: -0.02em;
+      line-height: 1.25;
+    }
+
+    .patient-sub-id {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      margin-top: 0.4rem;
+      font-size: 0.86rem;
+      color: var(--text-secondary);
+    }
+
+    .patient-sub-id span {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      background: var(--bg-primary);
+      padding: 0.2rem 0.65rem;
+      border-radius: 6px;
+      border: 1px solid var(--border-warm);
+    }
+
+    /* Quick Vitals / Blood Type Badges */
+    .hero-vital-badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+    }
+
+    .vital-stat-box {
+      background: var(--bg-primary);
+      border: 1px solid var(--border-warm);
+      border-radius: var(--radius-md);
+      padding: 0.65rem 1rem;
+      min-width: 112px;
+      text-align: center;
+    }
+
+    .vital-stat-box.blood-highlight {
+      background: var(--alert-bg);
+      border-color: var(--alert-border);
+    }
+
+    .vital-stat-label {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--text-secondary);
+      font-weight: 600;
+      display: block;
+    }
+
+    .vital-stat-value {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-top: 0.15rem;
+    }
+
+    .vital-stat-box.blood-highlight .vital-stat-value {
+      color: var(--alert-crimson);
+    }
+
+    /* Demographics Details Grid inside Hero */
+    .demographics-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-top: 1.25rem;
+    }
+
+    .demo-item {
+      display: flex;
+      flex-direction: column;
+      background: rgba(246, 243, 236, 0.55);
+      padding: 0.65rem 0.9rem;
+      border-radius: var(--radius-sm);
+      border: 1px solid rgba(226, 218, 201, 0.6);
+    }
+
+    .demo-label {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      font-weight: 500;
+    }
+
+    .demo-value {
+      font-size: 0.94rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-top: 0.15rem;
+    }
+
+    /* ==========================================================================
+       4. CRITICAL ALLERGY & MEDICAL ALERT BANNER
+       ========================================================================== */
+    .allergy-alert-banner {
+      background: var(--alert-bg);
+      border: 2px solid var(--alert-border);
+      border-radius: var(--radius-lg);
+      padding: 1.35rem 1.5rem;
+      margin-bottom: 1.5rem;
+      box-shadow: var(--shadow-soft);
+    }
+
+    .allergy-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .allergy-title {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      color: var(--alert-crimson);
+      font-size: 1.12rem;
+      font-weight: 700;
+    }
+
+    .allergy-cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+      gap: 0.85rem;
+    }
+
+    .allergy-chip-card {
+      background: #FFFDF9;
+      border: 1px solid var(--alert-border);
+      border-left: 4px solid var(--alert-crimson);
+      border-radius: var(--radius-md);
+      padding: 0.85rem 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+    }
+
+    .allergy-chip-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 0.5rem;
+    }
+
+    .allergy-substance {
+      font-weight: 700;
+      font-size: 0.98rem;
+      color: var(--alert-crimson);
+    }
+
+    .severity-badge {
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 0.15rem 0.55rem;
+      border-radius: 999px;
+      background: var(--alert-crimson);
+      color: #FFFDF9;
+      white-space: nowrap;
+    }
+
+    .severity-badge.moderate {
+      background: var(--accent-ochre);
+    }
+
+    .allergy-reaction {
+      font-size: 0.85rem;
+      color: var(--text-primary);
+    }
+
+    /* ==========================================================================
+       5. BENTO CLINICAL SECTIONS GRID
+       ========================================================================== */
+    .clinical-grid {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 1.35rem;
+    }
+
+    .col-span-12 { grid-column: span 12; }
+    .col-span-6 { grid-column: span 6; }
+    .col-span-4 { grid-column: span 4; }
+    .col-span-8 { grid-column: span 8; }
+
+    @media (max-width: 960px) {
+      .col-span-6, .col-span-4, .col-span-8 {
+        grid-column: span 12;
+      }
+    }
+
+    .clinical-card {
+      background: var(--card-surface);
+      border: 1px solid var(--border-warm);
+      border-radius: var(--radius-lg);
+      padding: 1.4rem;
+      box-shadow: var(--shadow-soft);
+      display: flex;
+      flex-direction: column;
+      transition: var(--transition-smooth);
+    }
+
+    .clinical-card:hover {
+      border-color: var(--border-strong);
+      box-shadow: var(--shadow-elevated);
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+      padding-bottom: 0.9rem;
+      margin-bottom: 1rem;
+      border-bottom: 1px solid var(--border-warm);
+    }
+
+    .section-title-group {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+    }
+
+    .section-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: var(--accent-terracotta-soft);
+      color: var(--accent-terracotta-dark);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .section-icon.sage {
+      background: var(--accent-sage-soft);
+      color: var(--accent-sage);
+    }
+
+    .section-icon.ochre {
+      background: var(--accent-ochre-soft);
+      color: #9A6B28;
+    }
+
+    .section-title {
+      font-size: 1.08rem;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .section-tag {
+      font-size: 0.72rem;
+      font-weight: 600;
+      padding: 0.2rem 0.6rem;
+      border-radius: 999px;
+      background: var(--bg-secondary);
+      color: var(--text-secondary);
+    }
+
+    /* Bilingual Sub-label Styling (雙語對照副標題) */
+    .bilingual-sub {
+      display: block;
+      font-size: 0.76rem;
+      font-weight: 500;
+      color: var(--accent-terracotta);
+      margin-top: 0.12rem;
+      line-height: 1.35;
+    }
+
+    body.hide-bilingual .bilingual-sub {
+      display: none !important;
+    }
+
+    /* Record Item Lists & Tables */
+    .record-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.85rem;
+    }
+
+    .record-item {
+      background: var(--bg-primary);
+      border: 1px solid var(--border-warm);
+      border-radius: var(--radius-md);
+      padding: 0.9rem 1.05rem;
+      transition: var(--transition-smooth);
+    }
+
+    .record-item:hover {
+      background: var(--card-hover);
+    }
+
+    .record-item-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      margin-bottom: 0.35rem;
+    }
+
+    .record-item-title {
+      font-weight: 700;
+      font-size: 0.96rem;
+      color: var(--text-primary);
+    }
+
+    .status-pill {
+      font-size: 0.72rem;
+      font-weight: 600;
+      padding: 0.18rem 0.55rem;
+      border-radius: 6px;
+      background: var(--accent-sage-soft);
+      color: var(--accent-sage);
+      border: 1px solid rgba(85, 107, 83, 0.2);
+    }
+
+    .status-pill.warm {
+      background: var(--accent-ochre-soft);
+      color: #8F6120;
+      border-color: rgba(196, 143, 69, 0.25);
+    }
+
+    .record-item-meta {
+      font-size: 0.84rem;
+      color: var(--text-secondary);
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      margin-top: 0.25rem;
+    }
+
+    .record-item-note {
+      font-size: 0.85rem;
+      color: var(--text-primary);
+      margin-top: 0.4rem;
+      padding-top: 0.4rem;
+      border-top: 1px dashed var(--border-warm);
+    }
+
+    /* Medication Specific Grid */
+    .med-dosage-tag {
+      display: inline-block;
+      background: var(--accent-terracotta-soft);
+      color: var(--accent-terracotta-dark);
+      font-weight: 700;
+      font-size: 0.78rem;
+      padding: 0.15rem 0.55rem;
+      border-radius: 6px;
+    }
+
+    /* Vitals & Lab Baseline Grid */
+    .vitals-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(155px, 1fr));
+      gap: 0.75rem;
+    }
+
+    .vital-card {
+      background: var(--bg-primary);
+      border: 1px solid var(--border-warm);
+      border-radius: var(--radius-md);
+      padding: 0.8rem 0.9rem;
+    }
+
+    .vital-card-name {
+      font-size: 0.76rem;
+      color: var(--text-secondary);
+      font-weight: 600;
+    }
+
+    .vital-card-reading {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--accent-terracotta-dark);
+      margin: 0.2rem 0;
+    }
+
+    .vital-card-date {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+    }
+
+    /* Social & Personal History Key-Value Table */
+    .kv-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 0.75rem;
+    }
+
+    .kv-box {
+      background: var(--bg-primary);
+      border: 1px solid var(--border-warm);
+      border-radius: var(--radius-sm);
+      padding: 0.75rem 0.9rem;
+    }
+
+    .kv-label {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      font-weight: 600;
+      margin-bottom: 0.2rem;
+    }
+
+    .kv-val {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    /* Emergency SOS First-Responder Mode */
+    body.sos-mode .non-sos {
+      display: none !important;
+    }
+
+    body.sos-mode .patient-hero,
+    body.sos-mode .allergy-alert-banner,
+    body.sos-mode .sos-priority {
+      border-width: 2px;
+      transform: scale(1.01);
+    }
+
+    /* ==========================================================================
+       6. CUSTOMIZATION / EDIT MODAL (LOCALSTORAGE + JSON EXPORT)
+       ========================================================================== */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(44, 38, 35, 0.55);
+      backdrop-filter: blur(4px);
+      z-index: 200;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+    }
+
+    .modal-backdrop.open {
+      display: flex;
+    }
+
+    .modal-dialog {
+      background: var(--card-surface);
+      border: 1px solid var(--border-strong);
+      border-radius: var(--radius-lg);
+      max-width: 720px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      padding: 1.5rem;
+      box-shadow: var(--shadow-elevated);
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid var(--border-warm);
+      margin-bottom: 1rem;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 0.9rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+    }
+
+    .form-group label {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+
+    .form-group input,
+    .form-group textarea {
+      padding: 0.55rem 0.75rem;
+      border-radius: 8px;
+      border: 1px solid var(--border-strong);
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      font-family: inherit;
+      font-size: 0.9rem;
+    }
+
+    .modal-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 0.65rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--border-warm);
+      flex-wrap: wrap;
+    }
+
+    /* Toast Notification */
+    .toast-msg {
+      position: fixed;
+      bottom: 1.5rem;
+      right: 1.5rem;
+      background: var(--text-primary);
+      color: #FFFDF9;
+      padding: 0.75rem 1.2rem;
+      border-radius: 10px;
+      font-size: 0.86rem;
+      font-weight: 600;
+      box-shadow: var(--shadow-elevated);
+      z-index: 300;
+      opacity: 0;
+      transform: translateY(12px);
+      pointer-events: none;
+      transition: var(--transition-smooth);
+    }
+
+    .toast-msg.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* Print Stylesheet */
+    @media print {
+      .top-bar, .utility-actions, .modal-backdrop {
+        display: none !important;
+      }
+      body {
+        background: #FFFFFF;
+        padding: 0;
+      }
+      .main-container {
+        margin: 0;
+        max-width: 100%;
+      }
+      .clinical-card, .patient-hero, .allergy-alert-banner {
+        break-inside: avoid;
+        box-shadow: none;
+        border: 1px solid #CCC;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ========================================================================
+       STICKY HEADER: MULTI-LANGUAGE SWITCHER & QUICK CLINICAL MODES
+       ======================================================================== -->
+  <header class="top-bar">
+    <div class="top-bar-inner">
+      <div class="brand-cluster">
+        <div class="brand-emblem" aria-hidden="true">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/>
+            <path d="M12 7v6"/><path d="M9 10h6"/>
+          </svg>
+        </div>
+        <div class="brand-title-wrap">
+          <h1 id="ui-app-title">隨身國際電子病歷</h1>
+          <p id="ui-app-subtitle">Portable International Personal Health Record</p>
+        </div>
+      </div>
+
+      <!-- 7-Language Instant Switcher -->
+      <nav class="lang-bar" aria-label="Language Switcher">
+        <button class="lang-btn active" data-lang="zh-TW" onclick="switchLanguage('zh-TW')">🇹🇼 繁體中文</button>
+        <button class="lang-btn" data-lang="en" onclick="switchLanguage('en')">🇺🇸 English</button>
+        <button class="lang-btn" data-lang="ja" onclick="switchLanguage('ja')">🇯🇵 日本語</button>
+        <button class="lang-btn" data-lang="ko" onclick="switchLanguage('ko')">🇰🇷 한국어</button>
+        <button class="lang-btn" data-lang="vi" onclick="switchLanguage('vi')">🇻🇳 Tiếng Việt</button>
+        <button class="lang-btn" data-lang="th" onclick="switchLanguage('th')">🇹🇭 ภาษาไทย</button>
+        <button class="lang-btn" data-lang="ru" onclick="switchLanguage('ru')">🇷🇺 Русский</button>
+      </nav>
+
+      <!-- Quick Toggles: Bilingual Mode, SOS Mode, Edit & Print -->
+      <div class="utility-actions">
+        <button id="btn-bilingual" class="btn-action active-toggle" onclick="toggleBilingual()" title="在外語模式下同步顯示中文對照">
+          <span>🌐</span>
+          <span id="ui-btn-bilingual">雙語對照：開</span>
+        </button>
+        <button id="btn-sos" class="btn-action btn-sos" onclick="toggleSOSMode()">
+          <span>🚨</span>
+          <span id="ui-btn-sos">急診重點模式</span>
+        </button>
+        <button class="btn-action" onclick="openEditModal()">
+          <span>✏️</span>
+          <span id="ui-btn-edit">編輯個人資料</span>
+        </button>
+        <button class="btn-action" onclick="window.print()">
+          <span>🖨️</span>
+          <span id="ui-btn-print">列印 / 存為 PDF</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ========================================================================
+       MAIN CLINICAL RECORD CONTENT
+       ======================================================================== -->
+  <main class="main-container">
+
+    <!-- Notice to Attending Physician / Paramedics -->
+    <section class="doctor-greeting-card">
+      <div class="doctor-greeting-text">
+        <h2 id="ui-doc-greeting-title">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+          <span>致急診與主治醫護人員（To Attending Medical Staff）</span>
+        </h2>
+        <p id="ui-doc-greeting-body">
+          這是患者隨身攜帶之跨國電子病歷摘要。您可以點擊上方語言列切換為您的母語檢視（支援中、英、日、韓、越、泰、俄文），所有過敏史、慢性病與目前用藥皆已核對。
+        </p>
+      </div>
+      <div class="last-updated-pill" id="ui-last-updated">最後更新：2026-11-01</div>
+    </section>
+
+    <!-- 1. PATIENT IDENTITY & EMERGENCY TRIAGE PASSPORT -->
+    <section class="patient-hero">
+      <div class="hero-top-row">
+        <div class="patient-identity">
+          <div class="avatar-circle" aria-hidden="true">
+            <svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/>
+              <circle cx="12" cy="7" r="4"/>
+            </svg>
+          </div>
+          <div class="patient-name-block">
+            <h2 id="patient-name-display">鄭亦焜 (Yi-Kun Cheng)</h2>
+            <div class="patient-sub-id" id="patient-sub-badges">
+              <!-- Populated dynamically -->
+            </div>
+          </div>
+        </div>
+
+        <div class="hero-vital-badges" id="hero-vital-badges">
+          <!-- Blood Type, Height/Weight/BMI, MRI Safety, Code Status -->
+        </div>
+      </div>
+
+      <div class="demographics-grid" id="demographics-grid">
+        <!-- Populated dynamically -->
+      </div>
+    </section>
+
+    <!-- 2. CRITICAL ALLERGIES & ADVERSE DRUG REACTIONS (HIGH PRIORITY BANNER) -->
+    <section class="allergy-alert-banner sos-priority">
+      <div class="allergy-header">
+        <div class="allergy-title">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+            <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/>
+            <path d="M12 9v4"/><path d="M12 17h.01"/>
+          </svg>
+          <span id="sec-title-allergies">過敏史與藥物不良反應（Allergies & ADR）</span>
+        </div>
+        <span class="section-tag" style="background:#F7D7D8; color:#8A2427;" id="sec-tag-allergies">給藥前務必確認</span>
+      </div>
+      <div class="allergy-cards-grid" id="allergy-list-container">
+        <!-- Populated dynamically -->
+      </div>
+    </section>
+
+    <!-- 3. BENTO CLINICAL HISTORY SECTIONS -->
+    <div class="clinical-grid">
+
+      <!-- SECTION A: CURRENT MEDICATIONS & SUPPLEMENTS (目前用藥史) -->
+      <section class="clinical-card col-span-6 sos-priority">
+        <div class="section-header">
+          <div class="section-title-group">
+            <div class="section-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z"/><path d="m8.5 8.5 7 7"/></svg>
+            </div>
+            <div>
+              <h3 class="section-title" id="sec-title-meds">目前規律用藥與隨身藥物</h3>
+            </div>
+          </div>
+          <span class="section-tag" id="sec-tag-meds">含學名與劑量</span>
+        </div>
+        <div class="record-list" id="meds-list-container"></div>
+      </section>
+
+      <!-- SECTION B: PAST MEDICAL HISTORY & CHRONIC CONDITIONS (過去疾病史與慢性病) -->
+      <section class="clinical-card col-span-6 sos-priority">
+        <div class="section-header">
+          <div class="section-title-group">
+            <div class="section-icon sage">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+            </div>
+            <div>
+              <h3 class="section-title" id="sec-title-pmh">過去疾病史與慢性病管理</h3>
+            </div>
+          </div>
+          <span class="section-tag" id="sec-tag-pmh">診斷與控制狀態</span>
+        </div>
+        <div class="record-list" id="pmh-list-container"></div>
+      </section>
+
+      <!-- SECTION C: SURGICAL HISTORY & IMPLANTS (手術史與體內植入物) -->
+      <section class="clinical-card col-span-6 sos-priority">
+        <div class="section-header">
+          <div class="section-title-group">
+            <div class="section-icon ochre">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><line x1="20" y1="4" x2="8.12" y2="15.88"/><line x1="14.47" y1="14.48" x2="20" y2="20"/><line x1="8.12" y1="8.12" x2="12" y2="12"/></svg>
+            </div>
+            <div>
+              <h3 class="section-title" id="sec-title-surgery">手術史、麻醉與體內植入物</h3>
+            </div>
+          </div>
+          <span class="section-tag" id="sec-tag-surgery">含 MRI 相容性</span>
+        </div>
+        <div class="record-list" id="surgery-list-container"></div>
+      </section>
+
+      <!-- SECTION D: FAMILY MEDICAL HISTORY (家族病史) -->
+      <section class="clinical-card col-span-6 non-sos">
+        <div class="section-header">
+          <div class="section-title-group">
+            <div class="section-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            </div>
+            <div>
+              <h3 class="section-title" id="sec-title-family">家族病史（一等與二等親）</h3>
+            </div>
+          </div>
+          <span class="section-tag" id="sec-tag-family">遺傳與心血管風險</span>
+        </div>
+        <div class="record-list" id="family-list-container"></div>
+      </section>
+
+      <!-- SECTION E: PERSONAL & SOCIAL HISTORY (個人史與生活型態) -->
+      <section class="clinical-card col-span-6 non-sos">
+        <div class="section-header">
+          <div class="section-title-group">
+            <div class="section-icon sage">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M17 8h1a4 4 0 1 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z"/><line x1="6" y1="2" x2="6" y2="4"/><line x1="10" y1="2" x2="10" y2="4"/><line x1="14" y1="2" x2="14" y2="4"/></svg>
+            </div>
+            <div>
+              <h3 class="section-title" id="sec-title-social">個人史、生活習慣與旅遊史</h3>
+            </div>
+          </div>
+          <span class="section-tag" id="sec-tag-social">菸酒、職業與作息</span>
+        </div>
+        <div class="kv-grid" id="social-list-container"></div>
+      </section>
+
+      <!-- SECTION F: BASELINE VITALS & RECENT LAB DATA (您常忘記但急診超重要的：平時生命徵象與抽血基準值) -->
+      <section class="clinical-card col-span-6 sos-priority">
+        <div class="section-header">
+          <div class="section-title-group">
+            <div class="section-icon ochre">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+            </div>
+            <div>
+              <h3 class="section-title" id="sec-title-vitals">平時生命徵象與近期檢驗基準值</h3>
+            </div>
+          </div>
+          <span class="section-tag" id="sec-tag-vitals">供急診比對基準</span>
+        </div>
+        <div class="vitals-grid" id="vitals-list-container"></div>
+      </section>
+
+      <!-- SECTION G: IMMUNIZATION & VACCINATION RECORD (疫苗接種與抗體紀錄) -->
+      <section class="clinical-card col-span-6 non-sos">
+        <div class="section-header">
+          <div class="section-title-group">
+            <div class="section-icon sage">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="m18 2 4 4"/><path d="m17 7 3-3"/><path d="M19 9 8.7 19.3c-1 1-2.5 1-3.4 0l-.6-.6c-1-1-1-2.5 0-3.4L15 5"/><path d="m9 11 4 4"/><path d="m5 19-3 3"/><path d="m14 4 6 6"/></svg>
+            </div>
+            <div>
+              <h3 class="section-title" id="sec-title-vaccines">疫苗接種與重要抗體紀錄</h3>
+            </div>
+          </div>
+          <span class="section-tag" id="sec-tag-vaccines">外傷破傷風與傳染病</span>
+        </div>
+        <div class="record-list" id="vaccine-list-container"></div>
+      </section>
+
+      <!-- SECTION H: EMERGENCY CONTACTS (ICE), PRIMARY PHYSICIAN & TRAVEL INSURANCE -->
+      <section class="clinical-card col-span-6 sos-priority">
+        <div class="section-header">
+          <div class="section-title-group">
+            <div class="section-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+            </div>
+            <div>
+              <h3 class="section-title" id="sec-title-contacts">緊急聯絡人 (ICE)、主治醫院與保險</h3>
+            </div>
+          </div>
+          <span class="section-tag" id="sec-tag-contacts">含國際電話國碼</span>
+        </div>
+        <div class="record-list" id="contacts-list-container"></div>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- ========================================================================
+       MODAL FOR CUSTOMIZING PERSONAL BASIC DATA & EXPORTING
+       ======================================================================== -->
+  <div class="modal-backdrop" id="edit-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3 id="modal-title" style="font-size: 1.15rem; font-weight: 700;">編輯個人基本識別與急救聯絡資訊</h3>
+        <button class="btn-action" onclick="closeEditModal()">✕</button>
+      </div>
+      <p style="font-size: 0.84rem; color: var(--text-secondary); margin-bottom: 1rem;">
+        修改後會自動儲存於您的瀏覽器（LocalStorage），離線也能開啟；您也可以匯出 JSON 備份。
+      </p>
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="input-name">姓名 (中英文對照建議)</label>
+          <input type="text" id="input-name" />
+        </div>
+        <div class="form-group">
+          <label for="input-dob">出生年月日 (YYYY-MM-DD)</label>
+          <input type="text" id="input-dob" />
+        </div>
+        <div class="form-group">
+          <label for="input-blood">血型與 Rh 因子</label>
+          <input type="text" id="input-blood" />
+        </div>
+        <div class="form-group">
+          <label for="input-passport">護照號碼 / 身分證字號</label>
+          <input type="text" id="input-passport" />
+        </div>
+        <div class="form-group">
+          <label for="input-height">身高 (cm)</label>
+          <input type="text" id="input-height" />
+        </div>
+        <div class="form-group">
+          <label for="input-weight">體重 (kg)</label>
+          <input type="text" id="input-weight" />
+        </div>
+        <div class="form-group">
+          <label for="input-ice-name">緊急聯絡人姓名與關係</label>
+          <input type="text" id="input-ice-name" />
+        </div>
+        <div class="form-group">
+          <label for="input-ice-phone">緊急聯絡人國際電話</label>
+          <input type="text" id="input-ice-phone" />
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-action" onclick="resetCustomData()">還原預設範例</button>
+        <button class="btn-action" onclick="exportMedicalJSON()">⬇ 匯出病歷 JSON</button>
+        <button class="btn-action active-toggle" onclick="saveCustomData()">💾 儲存並更新病歷</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Feedback -->
+  <div id="toast" class="toast-msg">已更新病歷設定</div>
+
+  <!-- ========================================================================
+       COMPREHENSIVE 7-LANGUAGE MEDICAL DATABASE & APPLICATION LOGIC
+       ======================================================================== -->
+  <script>
+    /**
+     * 1. STATE MANAGEMENT
+     */
+    let currentLang = 'zh-TW';
+    let bilingualMode = true; // Shows Traditional Chinese subtitle when viewing foreign languages
+    let sosMode = false;
+
+    const STORAGE_KEY = 'portable_phr_cheng_yikun_v2';
+
+    /**
+     * 2. MULTI-LANGUAGE UI DICTIONARY (7 Languages: zh-TW, en, ja, ko, vi, th, ru)
+     */
+    const uiDictionary = {
+      'zh-TW': {
+        appTitle: '隨身國際電子病歷',
+        appSubtitle: 'Portable International Personal Health Record',
+        btnBilingualOn: '雙語對照：開',
+        btnBilingualOff: '雙語對照：關',
+        btnSos: '急診重點模式',
+        btnEdit: '編輯個人資料',
+        btnPrint: '列印 / 存為 PDF',
+        docGreetingTitle: '致急診與主治醫護人員（To Attending Medical Staff）',
+        docGreetingBody: '這是患者（鄭亦焜 / Yi-Kun Cheng）隨身攜帶之跨國電子病歷摘要。您可以點擊上方語言列切換為您的母語檢視（支援中、英、日、韓、越、泰、俄文），所有過敏史、慢性病與目前用藥皆已核對。',
+        lastUpdated: '最後核對更新：2026-11-13',
+        labels: {
+          dob: '出生日期 / 年齡',
+          sex: '生理性別',
+          nationality: '國籍 / 語言',
+          passport: '護照 / 證件號碼',
+          bloodType: 'ABO / Rh 血型',
+          bmi: '身高 / 體重 / BMI / BSA',
+          mriStatus: 'MRI 核磁共振安全',
+          codeStatus: '急救意願與器官捐贈',
+          visionDental: '感官輔具與牙科植體'
+        },
+        sections: {
+          allergies: '過敏史與藥物不良反應（Allergies & ADR）',
+          allergiesTag: '給藥前務必確認',
+          meds: '目前規律用藥與隨身藥物',
+          medsTag: '含國際學名與劑量',
+          pmh: '過去疾病史與慢性病管理',
+          pmhTag: '診斷與控制狀態',
+          surgery: '手術史、麻醉與體內植入物',
+          surgeryTag: '含 MRI 相容性',
+          family: '家族病史（一等與二等親）',
+          familyTag: '遺傳與心血管風險',
+          social: '個人史、生活習慣與旅遊史',
+          socialTag: '菸酒、職業與作息',
+          vitals: '平時生命徵象與近期檢驗基準值',
+          vitalsTag: '供急診比對基準',
+          vaccines: '疫苗接種與重要抗體紀錄',
+          vaccinesTag: '外傷破傷風與傳染病',
+          contacts: '緊急聯絡人 (ICE)、主治醫院與保險',
+          contactsTag: '含國際電話國碼'
+        }
+      },
+      'en': {
+        appTitle: 'Portable Electronic Medical Record',
+        appSubtitle: 'International Patient Summary (IPS Standard)',
+        btnBilingualOn: 'Bilingual (zh-TW): ON',
+        btnBilingualOff: 'Bilingual: OFF',
+        btnSos: 'ER Triage Mode',
+        btnEdit: 'Edit Profile',
+        btnPrint: 'Print / Save PDF',
+        docGreetingTitle: 'To Attending Physicians, Nurses & Paramedics',
+        docGreetingBody: 'This is the verified Portable Personal Health Record of Yi-Kun Cheng (鄭亦焜). Use the top bar to switch between 7 languages. Bilingual mode displays Traditional Chinese sub-labels so you and the patient can point and communicate easily.',
+        lastUpdated: 'Last Verified: 2026-11-13',
+        labels: {
+          dob: 'Date of Birth / Age',
+          sex: 'Biological Sex',
+          nationality: 'Nationality / Languages',
+          passport: 'Passport / ID No.',
+          bloodType: 'Blood Group (ABO/Rh)',
+          bmi: 'Height / Weight / BMI / BSA',
+          mriStatus: 'MRI Compatibility',
+          codeStatus: 'Code Status & Organ Donor',
+          visionDental: 'Prosthetics / Lenses / Dental'
+        },
+        sections: {
+          allergies: 'Allergies & Adverse Drug Reactions (ADR)',
+          allergiesTag: 'Verify Before Prescribing',
+          meds: 'Current Medications & Supplements',
+          medsTag: 'Generic Name & Dosage',
+          pmh: 'Past Medical History & Chronic Conditions',
+          pmhTag: 'Active & Resolved',
+          surgery: 'Surgical History, Anesthesia & Implants',
+          surgeryTag: 'Includes MRI Status',
+          family: 'Family Medical History',
+          familyTag: '1st & 2nd Degree Relatives',
+          social: 'Personal, Social & Travel History',
+          socialTag: 'Lifestyle & Exposures',
+          vitals: 'Baseline Vital Signs & Recent Lab Reference',
+          vitalsTag: 'Patient Baseline Metrics',
+          vaccines: 'Immunization & Antibody Status',
+          vaccinesTag: 'Tetanus, Hep B & Travel',
+          contacts: 'Emergency Contacts (ICE), Hospital & Insurance',
+          contactsTag: 'International Dialing'
+        }
+      },
+      'ja': {
+        appTitle: '携帯型・多言語電子カルテ',
+        appSubtitle: '国際標準患者サマリー (Portable Health Record)',
+        btnBilingualOn: '二言語併記：ON',
+        btnBilingualOff: '二言語併記：OFF',
+        btnSos: '救急トリアージ表示',
+        btnEdit: '基本情報の編集',
+        btnPrint: '印刷 / PDF保存',
+        docGreetingTitle: '担当医師・救急隊員・医療スタッフの皆様へ',
+        docGreetingBody: '本画面は患者本人（鄭 亦焜 / チェン・イークン）の医療情報サマリーです。アレルギー歴、既往歴、常用薬、手術歴、ベースライン検査値を記載しています。中国語併記機能により、患者と指差しで意思疎通が可能です。',
+        lastUpdated: '最終更新日：2026-11-13',
+        labels: {
+          dob: '生年月日 / 年齢',
+          sex: '生物学的性別',
+          nationality: '国籍 / 使用言語',
+          passport: 'パスポート番号',
+          bloodType: '血液型 (ABO/Rh)',
+          bmi: '身長 / 体重 / BMI / 体表面積',
+          mriStatus: 'MRI検査の安全性',
+          codeStatus: '蘇生処置希望 (Code) / 臓器提供',
+          visionDental: 'コンタクト・歯科インプラント'
+        },
+        sections: {
+          allergies: 'アレルギー歴・薬物有害反応 (ADR)',
+          allergiesTag: '投薬前に必ず確認',
+          meds: '現在の常用薬・頓服薬・サプリメント',
+          medsTag: '一般名・用量・用法',
+          pmh: '既往歴・基礎疾患（慢性疾患）',
+          pmhTag: '治療状況・管理状態',
+          surgery: '手術歴・麻酔歴・体内金属インプラント',
+          surgeryTag: 'MRI対応状況含む',
+          family: '家族歴（一親等・二親等）',
+          familyTag: '遺伝・心血管リスク',
+          social: '生活歴・社会歴・渡航歴',
+          socialTag: '喫煙・飲酒・職業',
+          vitals: '平常時バイタルサイン・直近の検査基準値',
+          vitalsTag: '救急比較用ベースライン',
+          vaccines: '予防接種歴・抗体保有状況',
+          vaccinesTag: '破傷風・B型肝炎など',
+          contacts: '緊急連絡先 (ICE)・かかりつけ医・海外保険',
+          contactsTag: '国際電話番号対応'
+        }
+      },
+      'ko': {
+        appTitle: '휴대용 다국어 전자 의무기록',
+        appSubtitle: '국제 환자 요약서 (Portable Health Record)',
+        btnBilingualOn: '이중 언어 표시: 켜짐',
+        btnBilingualOff: '이중 언어 표시: 꺼짐',
+        btnSos: '응급 진료 모드',
+        btnEdit: '개인정보 수정',
+        btnPrint: '인쇄 / PDF 저장',
+        docGreetingTitle: '담당 의료진 및 응급구조사께 드리는 안내',
+        docGreetingBody: '이 문서는 환자 정역혼(Yi-Kun Cheng / 鄭亦焜)의 휴대용 다국어 건강 기록입니다. 약물 알레르기, 기저질환, 복용 중인 약물, 수술력이 포함되어 있으며 환자의 모국어(번체 중국어)가 함께 표시되어 원활한 소통이 가능합니다.',
+        lastUpdated: '최종 업데이트: 2026-11-13',
+        labels: {
+          dob: '생년월일 / 나이',
+          sex: '생물학적 성별',
+          nationality: '국적 / 사용 언어',
+          passport: '여권 번호 / 신분증',
+          bloodType: '혈액형 (ABO/Rh)',
+          bmi: '신장 / 체중 / BMI / 체표면적',
+          mriStatus: 'MRI 촬영 안전성',
+          codeStatus: '연명의료 의향 및 장기기증',
+          visionDental: '시력교정 / 치과 임플란트'
+        },
+        sections: {
+          allergies: '알레르기 및 약물 이상반응 (ADR)',
+          allergiesTag: '처방 전 필수 확인',
+          meds: '현재 복용 중인 약물 및 영양제',
+          medsTag: '성분명 및 복용량',
+          pmh: '과거 병력 및 만성 기저질환',
+          pmhTag: '진단명 및 조절 상태',
+          surgery: '수술력, 마취 특이사항 및 체내 보형물',
+          surgeryTag: 'MRI 가능 여부 포함',
+          family: '가족력 (직계 및 방계 가족)',
+          familyTag: '심혈관 및 유전 질환',
+          social: '개인 사회력 및 생활 습관',
+          socialTag: '흡연, 음주, 직업',
+          vitals: '평소 활력징후 및 최근 혈액검사 기준치',
+          vitalsTag: '평상시 기준 데이터',
+          vaccines: '예방접종 및 항체 보유 기록',
+          vaccinesTag: '파상풍, B형간염 등',
+          contacts: '비상 연락처 (ICE), 주치의 및 여행자 보험',
+          contactsTag: '국제 전화번호 포함'
+        }
+      },
+      'vi': {
+        appTitle: 'Hồ Sơ Bệnh Án Điện Tử Cá Nhân',
+        appSubtitle: 'Tóm Tắt Y Tế Quốc Tế Đa Ngôn Ngữ',
+        btnBilingualOn: 'Song ngữ: BẬT',
+        btnBilingualOff: 'Song ngữ: TẮT',
+        btnSos: 'Chế độ Cấp cứu (SOS)',
+        btnEdit: 'Chỉnh sửa hồ sơ',
+        btnPrint: 'In / Lưu PDF',
+        docGreetingTitle: 'Kính gửi Bác sĩ Điều trị & Nhân viên Y tế Cấp cứu',
+        docGreetingBody: 'Đây là hồ sơ bệnh án tóm tắt mang theo của bệnh nhân Trịnh Diệc Côn (Yi-Kun Cheng / 鄭亦焜). Bao gồm tiền sử dị ứng thuốc, bệnh nền, thuốc đang dùng và tiền sử phẫu thuật. Có hiển thị song ngữ để bác sĩ và bệnh nhân dễ trao đổi.',
+        lastUpdated: 'Cập nhật lần cuối: 2026-11-13',
+        labels: {
+          dob: 'Ngày sinh / Tuổi',
+          sex: 'Giới tính sinh học',
+          nationality: 'Quốc tịch / Ngôn ngữ',
+          passport: 'Số Hộ chiếu / ID',
+          bloodType: 'Nhóm máu (ABO/Rh)',
+          bmi: 'Chiều cao / Cân nặng / BMI / BSA',
+          mriStatus: 'An toàn chụp cộng hưởng từ (MRI)',
+          codeStatus: 'Nguyện vọng Hồi sức & Hiến tạng',
+          visionDental: 'Kính áp tròng / Implant nha khoa'
+        },
+        sections: {
+          allergies: 'Tiền Sử Dị Ứng & Phản Ứng Có Hại Của Thuốc (ADR)',
+          allergiesTag: 'Kiểm tra kỹ trước khi cấp thuốc',
+          meds: 'Thuốc Đang Sử Dụng & Thực Phẩm Bổ Sung',
+          medsTag: 'Tên hoạt chất & Liều lượng',
+          pmh: 'Tiền Sử Bệnh Lý & Bệnh Mãn Tính',
+          pmhTag: 'Chẩn đoán & Kiểm soát',
+          surgery: 'Tiền Sử Phẫu Thuật, Gây Mê & Vật Cấy Ghép',
+          surgeryTag: 'Bao gồm tương thích MRI',
+          family: 'Tiền Sử Bệnh Gia Đình',
+          familyTag: 'Nguy cơ di truyền & tim mạch',
+          social: 'Tiền Sử Cá Nhân, Lối Sống & Dịch Tễ',
+          socialTag: 'Thuốc lá, Rượu bia, Nghề nghiệp',
+          vitals: 'Dấu Hiệu Sinh Tồn Nền & Xét Nghiệm Gần Đây',
+          vitalsTag: 'Chỉ số cơ bản khi khỏe mạnh',
+          vaccines: 'Lịch Sử Tiêm Chủng & Kháng Thể',
+          vaccinesTag: 'Uốn ván, Viêm gan B, Cúm',
+          contacts: 'Liên Hệ Khẩn Cấp (ICE), Bệnh Viện & Bảo Hiểm',
+          contactsTag: 'Kèm mã vùng quốc tế'
+        }
+      },
+      'th': {
+        appTitle: 'เวชระเบียนอิเล็กทรอนิกส์พกพา',
+        appSubtitle: 'ข้อมูลสรุปสุขภาพผู้ป่วยนานาชาติ (Portable Health Record)',
+        btnBilingualOn: 'แสดงสองภาษา: เปิด',
+        btnBilingualOff: 'แสดงสองภาษา: ปิด',
+        btnSos: 'โหมดฉุกเฉิน (ER)',
+        btnEdit: 'แก้ไขข้อมูลส่วนตัว',
+        btnPrint: 'พิมพ์ / บันทึก PDF',
+        docGreetingTitle: 'เรียน แพทย์เวร พยาบาล และเจ้าหน้าที่กู้ชีพฉุกเฉิน',
+        docGreetingBody: 'นี่คือข้อมูลสรุปประวัติทางการแพทย์ของผู้ป่วย เจิ้ง อี้คุน (Yi-Kun Cheng / 鄭亦焜) ประกอบด้วยประวัติการแพ้ยา โรคประจำตัว ยาที่ใช้ในปัจจุบัน และประวัติการผ่าตัด มีคำแปลภาษาจีนกำกับเพื่อช่วยให้สื่อสารกับผู้ป่วยได้สะดวกขึ้น',
+        lastUpdated: 'อัปเดตล่าสุด: 2026-11-13',
+        labels: {
+          dob: 'วันเกิด / อายุ',
+          sex: 'เพศตามกำเนิด',
+          nationality: 'สัญชาติ / ภาษาที่ใช้',
+          passport: 'หมายเลขหนังสือเดินทาง',
+          bloodType: 'หมู่เลือด (ABO/Rh)',
+          bmi: 'ส่วนสูง / น้ำหนัก / BMI / BSA',
+          mriStatus: 'ความปลอดภัยในการทำ MRI',
+          codeStatus: 'เจตจำนงการกู้ชีพ / บริจาคอวัยวะ',
+          visionDental: 'คอนแทคเลนส์ / รากฟันเทียม'
+        },
+        sections: {
+          allergies: 'ประวัติการแพ้ยา แพ้อาหาร และสารทึบรังสี (ADR)',
+          allergiesTag: 'โปรดตรวจสอบก่อนให้ยา',
+          meds: 'ยาที่รับประทานเป็นประจำและอาหารเสริม',
+          medsTag: 'ชื่อสามัญทางยาและขนาดยา',
+          pmh: 'ประวัติการเจ็บป่วยในอดีตและโรคประจำตัว',
+          pmhTag: 'สถานะการรักษาปัจจุบัน',
+          surgery: 'ประวัติการผ่าตัด การดมยาสลบ และวัสดุฝังในร่างกาย',
+          surgeryTag: 'รวมข้อมูลการเข้าเครื่อง MRI',
+          family: 'ประวัติการเจ็บป่วยในครอบครัว',
+          familyTag: 'โรคทางพันธุกรรมและหัวใจ',
+          social: 'ประวัติส่วนตัว พฤติกรรมสุขภาพ และการเดินทาง',
+          socialTag: 'การสูบบุหรี่ ดื่มสุรา อาชีพ',
+          vitals: 'สัญญาณชีพพื้นฐานและผลตรวจทางห้องปฏิบัติการล่าสุด',
+          vitalsTag: 'ค่าพื้นฐานของผู้ป่วย',
+          vaccines: 'ประวัติการได้รับวัคซีนและภูมิคุ้มกัน',
+          vaccinesTag: 'บาดทะยัก ไวรัสตับอักเสบบี ฯลฯ',
+          contacts: 'ผู้ติดต่อฉุกเฉิน (ICE) โรงพยาบาลประจำ และประกันภัย',
+          contactsTag: 'พร้อมรหัสโทรศัพท์ระหว่างประเทศ'
+        }
+      },
+      'ru': {
+        appTitle: 'Портативная электронная медкарта',
+        appSubtitle: 'Международная выписка пациента (Portable Health Record)',
+        btnBilingualOn: 'Двуязычный режим: ВКЛ',
+        btnBilingualOff: 'Двуязычный режим: ВЫКЛ',
+        btnSos: 'Экстренный режим (ER)',
+        btnEdit: 'Редактировать',
+        btnPrint: 'Печать / PDF',
+        docGreetingTitle: 'Вниманию лечащих врачей и бригад скорой помощи',
+        docGreetingBody: 'Это проверенная медицинская карта пациента Чжэн Икунь (Yi-Kun Cheng / 鄭亦焜). Содержит данные об аллергиях, хронических заболеваниях, принимаемых препаратах и перенесенных операциях. Включен двуязычный режим для удобного общения с пациентом.',
+        lastUpdated: 'Обновлено: 2026-11-13',
+        labels: {
+          dob: 'Дата рождения / Возраст',
+          sex: 'Биологический пол',
+          nationality: 'Гражданство / Языки',
+          passport: 'Номер паспорта / ID',
+          bloodType: 'Группа крови (ABO/Rh)',
+          bmi: 'Рост / Вес / ИМТ / ППТ',
+          mriStatus: 'Безопасность МРТ',
+          codeStatus: 'Реанимационный статус / Донорство',
+          visionDental: 'Линзы / Зубные импланты'
+        },
+        sections: {
+          allergies: 'Аллергологический анамнез и непереносимость лекарств',
+          allergiesTag: 'Проверить перед введением препаратов',
+          meds: 'Принимаемые медикаменты и добавки',
+          medsTag: 'МНН, дозировка и режим приема',
+          pmh: 'Перенесенные и хронические заболевания',
+          pmhTag: 'Диагноз и статус контроля',
+          surgery: 'Хирургический анамнез, анестезия и имплантаты',
+          surgeryTag: 'Включая совместимость с МРТ',
+          family: 'Семейный (наследственный) анамнез',
+          familyTag: 'Родственники 1-й и 2-й линии',
+          social: 'Социальный анамнез и образ жизни',
+          socialTag: 'Курение, алкоголь, профессия',
+          vitals: 'Базовые жизненные показатели и лабораторные анализы',
+          vitalsTag: 'Норма пациента в покое',
+          vaccines: 'Вакцинация и иммунный статус',
+          vaccinesTag: 'Столбняк, Гепатит B и др.',
+          contacts: 'Экстренные контакты (ICE), клиника и страховка',
+          contactsTag: 'Международный формат номеров'
+        }
+      }
+    };
+
+    /**
+     * 3. PATIENT MEDICAL RECORD DATA (Translated across all 7 languages)
+     */
+    const defaultPatientProfile = {
+      name: '鄭亦焜 (Yi-Kun Cheng)',
+      dob: '2003-12-16 (22 yrs)',
+      bloodType: 'O+ (Rh Positive)',
+      passport: 'TW-318940219',
+      heightCm: '171',
+      weightKg: '55',
+      iceName: '鄭爸爸 / 鄭媽媽 (Parents - 父母)',
+      icePhone: '+886-912-345-678'
+    };
+
+    // Multi-language Phonetic & Official Name Display for 鄭亦焜 (Yi-Kun Cheng)
+    const localizedPatientNames = {
+      'zh-TW': '鄭亦焜 (Yi-Kun Cheng)',
+      'en': 'Yi-Kun Cheng (鄭亦焜)',
+      'ja': '鄭 亦焜 (チェン・イークン / Yi-Kun Cheng)',
+      'ko': '정역혼 (Yi-Kun Cheng / 鄭亦焜)',
+      'vi': 'Trịnh Diệc Côn (Yi-Kun Cheng / 鄭亦焜)',
+      'th': 'เจิ้ง อี้คุน (Yi-Kun Cheng / 鄭亦焜)',
+      'ru': 'Чжэн Икунь (Yi-Kun Cheng / 鄭亦焜)'
+    };
+
+    const localizedDobDisplay = {
+      'zh-TW': '2003/12/16 (22 歲)',
+      'en': '2003-12-16 (Age 22)',
+      'ja': '2003年12月16日生 (22歳)',
+      'ko': '2003-12-16 (만 22세)',
+      'vi': '16/12/2003 (22 tuổi)',
+      'th': '16/12/2003 (อายุ 22 ปี)',
+      'ru': '16.12.2003 (22 года)'
+    };
+
+    const clinicalRecordData = {
+      demographics: {
+        sex: {
+          'zh-TW': '男性 (Male)',
+          'en': 'Male',
+          'ja': '男性 (Male)',
+          'ko': '남성 (Male)',
+          'vi': 'Nam (Male)',
+          'th': 'ชาย (Male)',
+          'ru': 'Мужской (Male)'
+        },
+        nationality: {
+          'zh-TW': '台灣 (Taiwan) / 華語、英語、基礎日語',
+          'en': 'Taiwan / Mandarin, English, Basic Japanese',
+          'ja': '台湾 (Taiwan) / 中国語・英語・日常会話レベルの日本語',
+          'ko': '대만 (Taiwan) / 중국어, 영어, 기초 일본어',
+          'vi': 'Đài Loan / Tiếng Trung, Tiếng Anh, Tiếng Nhật cơ bản',
+          'th': 'ไต้หวัน / ภาษาจีนกลาง, อังกฤษ, ญี่ปุ่นพื้นฐาน',
+          'ru': 'Тайвань / Китайский, английский, базовый японский'
+        },
+        mriSafety: {
+          'zh-TW': '可安全進行 MRI (僅右下第一大臼齒純鈦植牙，無心律調節器或腦血管夾)',
+          'en': 'MRI Safe / Conditional (Titanium dental implant #46 only; NO pacemaker or ferromagnetic clips)',
+          'ja': 'MRI検査可能（右下第一大臼歯に純チタン製歯科インプラントのみ、ペースメーカー等なし）',
+          'ko': 'MRI 촬영 가능 (우측 하악 제1대구치 순수 티타늄 임플란트만 있음, 심박동기 없음)',
+          'vi': 'An toàn khi chụp MRI (Chỉ có trụ Implant nha khoa Titanium răng #46, không có máy tạo nhịp)',
+          'th': 'เข้าเครื่อง MRI ได้อย่างปลอดภัย (มีเพียงรากฟันเทียมไทเทเนียมซี่ #46 ไม่มีเครื่องกระตุ้นหัวใจ)',
+          'ru': 'МРТ разрешено (только титановый зубной имплантат #46; кардиостимулятора нет)'
+        },
+        codeStatus: {
+          'zh-TW': '完整急救 (Full Code) / 已簽署器官捐贈同意書註記於健保卡',
+          'en': 'Full Code (Full Resuscitation) / Registered Organ Donor',
+          'ja': 'フルコード（全ての蘇生処置を希望） / 臓器提供意思表示あり',
+          'ko': '심폐소생술 등 모든 응급처치 희망 (Full Code) / 장기기증 등록자',
+          'vi': 'Hồi sức toàn diện (Full Code) / Đã đăng ký hiến tặng mô tạng',
+          'th': 'ประสงค์รับการกู้ชีพเต็มรูปแบบ (Full Code) / แสดงเจตจำนงบริจาคอวัยวะ',
+          'ru': 'Полная реанимация (Full Code) / Зарегистрированный донор органов'
+        },
+        visionDental: {
+          'zh-TW': '配戴軟式日拋隱形眼鏡（昏迷急救時請協助取下）；右下顎 #46 植牙固定假牙',
+          'en': 'Wears soft daily contact lenses (please remove if unconscious); Fixed dental implant at lower right #46',
+          'ja': 'ソフトコンタクトレンズ装用（意識不明時は外してください）・右下#46歯科インプラント',
+          'ko': '소프트 콘택트렌즈 착용(의식불명 시 제거 요망) / 우측 하악 #46 임플란트 보철',
+          'vi': 'Đeo kính áp tròng mềm (vui lòng tháo ra nếu bất tỉnh); Răng giả cố định trên Implant #46',
+          'th': 'ใส่คอนแทคเลนส์ชนิดนิ่ม (โปรดถอดออกหากหมดสติ); รากฟันเทียมซี่ #46 ขวาล่าง',
+          'ru': 'Носит мягкие контактные линзы (снять при потере сознания); зубной имплантат #46 справа снизу'
+        }
+      },
+
+      /* 2. ALLERGIES & ADVERSE DRUG REACTIONS */
+      allergies: [
+        {
+          severity: 'high',
+          substance: {
+            'zh-TW': '盤尼西林類抗生素 (Penicillin / Amoxicillin)',
+            'en': 'Penicillin & Beta-Lactam Antibiotics (Amoxicillin)',
+            'ja': 'ペニシリン系抗生物質 (Penicillin / Amoxicillin)',
+            'ko': '페니실린계 항생제 (Penicillin / Amoxicillin)',
+            'vi': 'Kháng sinh nhóm Penicillin (Amoxicillin)',
+            'th': 'ยาปฏิชีวนะกลุ่มเพนิซิลลิน (Penicillin / Amoxicillin)',
+            'ru': 'Антибиотики пенициллинового ряда (Penicillin / Amoxicillin)'
+          },
+          badgeText: {
+            'zh-TW': '嚴重過敏 (Severe)',
+            'en': 'Severe / Anaphylaxis Risk',
+            'ja': '重度（アナフィラキシー危険）',
+            'ko': '중증 (아나필락시스 위험)',
+            'vi': 'Nghiêm trọng (Sốc phản vệ)',
+            'th': 'รุนแรง (เสี่ยงอนาฟิแล็กซิส)',
+            'ru': 'Тяжелая (риск анафилаксии)'
+          },
+          reaction: {
+            'zh-TW': '曾發生全身性蕁麻疹、眼唇血管性水腫（Angioedema）與呼吸急促。可改用 Macrolides 或 Fluoroquinolones。',
+            'en': 'Generalized urticaria, lip/periorbital angioedema, and dyspnea. Safe alternatives: Macrolides or Fluoroquinolones.',
+            'ja': '全身性蕁麻疹、口唇・眼瞼の血管性浮腫、呼吸苦の既往あり。マクロライド系またはニューキノロン系へ変更可。',
+            'ko': '전신 두드러기, 입술/안와 혈관부종 및 호흡곤란 발생 이력. 마크로라이드계 또는 퀴놀론계 대체 가능.',
+            'vi': 'Nổi mề đay toàn thân, phù mạch môi/mắt và khó thở. Có thể thay thế bằng nhóm Macrolide hoặc Fluoroquinolone.',
+            'th': 'เคยมีอาการผื่นลมพิษทั่วตัว ปากและตาบวม (Angioedema) หายใจลำบาก สามารถใช้กลุ่ม Macrolides แทนได้',
+            'ru': 'Генерализованная крапивница, отек Квинке губ/век, одышка. Безопасная замена: макролиды или фторхинолоны.'
+          }
+        },
+        {
+          severity: 'high',
+          substance: {
+            'zh-TW': '非類固醇消炎止痛藥 (NSAIDs: Ibuprofen / Ketorolac / Diclofenac)',
+            'en': 'NSAIDs (Ibuprofen, Ketorolac, Diclofenac)',
+            'ja': '非ステロイド性抗炎症薬 (NSAIDs: ロキソプロフェン・イブプロフェン等)',
+            'ko': '비스테로이드성 소염진통제 (NSAIDs: 이부프로펜, 케토롤락 등)',
+            'vi': 'Thuốc kháng viêm không Steroid (NSAIDs: Ibuprofen, Diclofenac)',
+            'th': 'ยาแก้ปวดกลุ่มเอ็นเสด (NSAIDs: Ibuprofen, Ketorolac, Diclofenac)',
+            'ru': 'НПВП (Ибупрофен, Кеторолак, Диклофенак)'
+          },
+          badgeText: {
+            'zh-TW': '中重度過敏 (High Alert)',
+            'en': 'Bronchospasm / Angioedema',
+            'ja': '喘息誘発・浮腫',
+            'ko': '기관지 경련 및 부종',
+            'vi': 'Co thắt phế quản / Phù mắt',
+            'th': 'หลอดลมหดเกร็ง / ตาบวม',
+            'ru': 'Бронхоспазм / Отек век'
+          },
+          reaction: {
+            'zh-TW': '服用後 30 分鐘內出現雙側眼眶腫脹與誘發支氣管收縮喘鳴。退燒止痛請使用 Acetaminophen (普拿疼/Paracetamol)。',
+            'en': 'Triggers periorbital swelling and mild bronchospasm within 30 mins. Use Acetaminophen (Paracetamol) safely for pain/fever.',
+            'ja': '服用後30分以内に眼周囲浮腫と軽度の気管支痙攣を誘発。解熱鎮痛にはアセトアミノフェン（カロナール等）を使用してください。',
+            'ko': '복용 30분 내 눈 주위 부종 및 기관지 수축 유발. 해열·진통 목적 시 아세트아미노펜(타이레놀)은 안전하게 복용 가능.',
+            'vi': 'Sưng quanh hốc mắt và co thắt phế quản nhẹ sau 30 phút uống. Dùng Acetaminophen (Paracetamol) an toàn để giảm đau/hạ sốt.',
+            'th': 'ทำให้เกิดอาการบวมรอบดวงตาและหลอดลมหดเกร็งภายใน 30 นาที กรุณาใช้พาราเซตามอล (Acetaminophen) แทนเพื่อลดไข้แก้ปวด',
+            'ru': 'Вызывает периорбитальный отек и бронхоспазм через 30 минут. Для обезболивания безопасно использовать Парацетамол.'
+          }
+        },
+        {
+          severity: 'moderate',
+          substance: {
+            'zh-TW': '含碘靜脈注射顯影劑與甲殼類海鮮 (Iodinated Contrast & Shellfish)',
+            'en': 'Iodinated CT Contrast Media & Crustacean Shellfish',
+            'ja': 'ヨード造影剤（軽度発疹）および甲殻類（エビ・カニ）',
+            'ko': '요오드성 조영제 및 갑각류 (새우, 게)',
+            'vi': 'Thuốc cản quang chứa I-ốt & Hải sản có vỏ (Tôm, Cua)',
+            'th': 'สารทึบรังสีที่มีไอโอดีน และอาหารทะเลกลุ่มกุ้ง-ปู',
+            'ru': 'Йодсодержащие контрастные вещества и ракообразные'
+          },
+          badgeText: {
+            'zh-TW': '輕中度反應 (Moderate)',
+            'en': 'Moderate / Pre-medicate',
+            'ja': '中等度（前投薬推奨）',
+            'ko': '중등도 (전처치 권장)',
+            'vi': 'Trung bình (Cần dự phòng)',
+            'th': 'ปานกลาง (ควรให้ยาป้องกัน)',
+            'ru': 'Умеренная (премедикация)'
+          },
+          reaction: {
+            'zh-TW': '注射 CT 顯影劑曾起紅疹與皮膚搔癢；若急診必須施打顯影劑，建議預先給予抗組織胺與類固醇 (Pre-medication)。',
+            'en': 'Delayed pruritic rash after IV iodinated contrast. Recommend antihistamine + corticosteroid pre-medication if contrast CT is required.',
+            'ja': '造影CT後に掻痒感を伴う紅斑の既往あり。造影検査が必要な場合は抗ヒスタミン薬・ステロイドの前投薬を推奨。',
+            'ko': '조영제 투여 후 가려움증을 동반한 발진 이력. 조영증강 CT 필요 시 항히스타민제 및 스테로이드 전처치 권장.',
+            'vi': 'Phát ban ngứa sau khi tiêm thuốc cản quang CT. Khuyến cáo tiêm dự phòng kháng Histamine và Corticoid nếu bắt buộc chụp CT có cản quang.',
+            'th': 'เคยมีผื่นคันหลังฉีดสารทึบรังสี หากจำเป็นต้องทำ CT ฉีดสี แนะนำให้ยาต้านฮิสตามีนและสเตียรอยด์ล่วงหน้า (Pre-medication)',
+            'ru': 'Зудящая сыпь после введения контраста для КТ. При необходимости КТ с контрастом рекомендуется премедикация антигистаминными и ГКС.'
+          }
+        }
+      ],
+
+      /* 3. CURRENT MEDICATIONS & SUPPLEMENTS */
+      medications: [
+        {
+          name: {
+            'zh-TW': 'Telmisartan (必康平 Micardis) 40 mg',
+            'en': 'Telmisartan (Micardis) 40 mg Tablet',
+            'ja': 'テルミサルタン (ミカルディス / Telmisartan) 40 mg',
+            'ko': '텔미사르탄 (미카르디스 / Telmisartan) 40 mg',
+            'vi': 'Telmisartan (Micardis) viên 40 mg',
+            'th': 'เทลมิซาร์แทน (Telmisartan / Micardis) 40 มก.',
+            'ru': 'Телмисартан (Микардис / Telmisartan) 40 мг'
+          },
+          dosage: {
+            'zh-TW': '每日 1 次，每次 1 顆 (早餐後口服 QD PO)',
+            'en': '1 tablet once daily in the morning (40 mg PO QD)',
+            'ja': '1日1回 1錠 朝食後内服 (40 mg PO QD)',
+            'ko': '1일 1회 1정 아침 식후 복용 (40 mg PO QD)',
+            'vi': 'Uống 1 viên/lần, ngày 1 lần sau ăn sáng (PO QD)',
+            'th': 'รับประทานวันละ 1 ครั้ง ครั้งละ 1 เม็ด หลังอาหารเช้า',
+            'ru': 'По 1 таблетке 1 раз в сутки утром после еды (PO QD)'
+          },
+          indication: {
+            'zh-TW': '適應症：原發性高血壓控制（ARB 類降壓藥，已穩定服用 3 年）',
+            'en': 'Indication: Essential Hypertension (ARB class; stable therapy for 3 years)',
+            'ja': '適応：本態性高血圧症（ARB・3年間継続内服で血圧安定）',
+            'ko': '적응증: 본태성 고혈압 조절 (ARB 계열, 3년째 안정적 복용 중)',
+            'vi': 'Chỉ định: Kiểm soát tăng huyết áp vô căn (Nhóm ARB, đã dùng ổn định 3 năm)',
+            'th': 'ข้อบ่งใช้: ควบคุมความดันโลหิตสูง (กลุ่ม ARB รับประทานต่อเนื่องมา 3 ปี)',
+            'ru': 'Показания: Эссенциальная артериальная гипертензия (БРА; стабильный прием 3 года)'
+          }
+        },
+        {
+          name: {
+            'zh-TW': 'Rosuvastatin (冠脂妥 Crestor) 10 mg',
+            'en': 'Rosuvastatin (Crestor) 10 mg Tablet',
+            'ja': 'ロスバスタチン (クレストール / Rosuvastatin) 10 mg',
+            'ko': '로수바스타틴 (크레스토 / Rosuvastatin) 10 mg',
+            'vi': 'Rosuvastatin (Crestor) viên 10 mg',
+            'th': 'โรซูวาสแตติน (Rosuvastatin / Crestor) 10 มก.',
+            'ru': 'Розувастатин (Крестор / Rosuvastatin) 10 мг'
+          },
+          dosage: {
+            'zh-TW': '每日 1 次，每次半顆 5mg (晚餐後口服 PO QD)',
+            'en': '0.5 tablet (5 mg) once daily in the evening (PO QD)',
+            'ja': '1日1回 0.5錠 (5mg) 夕食後内服 (PO QD)',
+            'ko': '1일 1회 0.5정(5mg) 저녁 식후 복용',
+            'vi': 'Uống nửa viên (5 mg) mỗi tối sau ăn (PO QD)',
+            'th': 'รับประทานครั้งละครึ่งเม็ด (5 มก.) วันละ 1 ครั้ง หลังอาหารเย็น',
+            'ru': 'По 0,5 таблетки (5 мг) 1 раз в сутки вечером (PO QD)'
+          },
+          indication: {
+            'zh-TW': '適應症：高膽固醇血症（控制低密度脂蛋白 LDL-C < 100 mg/dL）',
+            'en': 'Indication: Hypercholesterolemia / Dyslipidemia (maintaining LDL-C < 100 mg/dL)',
+            'ja': '適応：高コレステロール血症・脂質異常症（LDL-C < 100 mg/dL に維持）',
+            'ko': '적응증: 고콜레스테롤혈증 / 이상지질혈증 (LDL-C 100 미만 유지)',
+            'vi': 'Chỉ định: Rối loạn mỡ máu / Tăng cholesterol (duy trì LDL-C < 100 mg/dL)',
+            'th': 'ข้อบ่งใช้: ภาวะไขมันคอเลสเตอรอลในเลือดสูง (ควบคุมค่า LDL-C < 100 mg/dL)',
+            'ru': 'Показания: Гиперхолестеринемия (поддержание ЛПНП < 100 мг/дл)'
+          }
+        },
+        {
+          name: {
+            'zh-TW': 'Budesonide / Formoterol (吸必擴 Symbicort Turbuhaler) 160/4.5 mcg',
+            'en': 'Budesonide / Formoterol (Symbicort Inhaler) 160/4.5 mcg',
+            'ja': 'ブデソニド・ホルモテロール (シムビコート吸入剤) 160/4.5 mcg',
+            'ko': '부데소니드/포르모테롤 (심비코트 터부헬러 흡입기) 160/4.5 mcg',
+            'vi': 'Ống hít Budesonide / Formoterol (Symbicort) 160/4.5 mcg',
+            'th': 'ยาพ่นสูด Budesonide / Formoterol (Symbicort) 160/4.5 mcg',
+            'ru': 'Будесонид / Формотерол (Симбикорт Турбухалер) 160/4,5 мкг'
+          },
+          dosage: {
+            'zh-TW': '需要時吸入 1 吸 (PRN 隨身攜帶備用)',
+            'en': 'Inhale 1 puff as needed for wheezing/cough (PRN Reliever)',
+            'ja': '発作時・喘鳴時に1吸入（頓用 PRN・常に携帯）',
+            'ko': '천식 증상 또는 호흡곤란 시 1회 흡입 (PRN 상시 휴대)',
+            'vi': 'Hít 1 nhát khi cần thiết lúc khó thở/khò khè (PRN mang theo người)',
+            'th': 'พ่นสูด 1 ครั้งเมื่อมีอาการหอบหรือแน่นหน้าอก (พกติดตัว PRN)',
+            'ru': 'Ингаляционно 1 вдох по требованию при свистящем дыхании (PRN)'
+          },
+          indication: {
+            'zh-TW': '適應症：輕度間歇性氣喘與冷空氣誘發之支氣管收縮緩解',
+            'en': 'Indication: Mild intermittent asthma & cold-air induced bronchospasm relief',
+            'ja': '適応：軽症間欠型気管支喘息（寒冷刺激やNSAIDs回避時の気管支拡張）',
+            'ko': '적응증: 경증 간헐성 천식 및 찬 공기 유발 기관지 수축 완화',
+            'vi': 'Chỉ định: Hen phế quản nhẹ gián đoạn & co thắt phế quản do lạnh',
+            'th': 'ข้อบ่งใช้: โรคหืดระดับเล็กน้อย และอาการหลอดลมตีบจากอากาศเย็น',
+            'ru': 'Показания: Легкая интермиттирующая бронхиальная астма'
+          }
+        },
+        {
+          name: {
+            'zh-TW': '日常保健食品：維生素 D3 (2000 IU) + 高濃度魚油 (Omega-3 1000 mg)',
+            'en': 'Supplements: Vitamin D3 (2000 IU) + Omega-3 Fish Oil (1000 mg)',
+            'ja': 'サプリメント：ビタミンD3 (2000 IU)・オメガ3魚油 (1000 mg)',
+            'ko': '건강기능식품: 비타민 D3 (2000 IU) + 오메가-3 피쉬오일 (1000 mg)',
+            'vi': 'Thực phẩm bổ sung: Vitamin D3 (2000 IU) + Dầu cá Omega-3 (1000 mg)',
+            'th': 'ผลิตภัณฑ์เสริมอาหาร: วิตามิน D3 (2000 IU) + น้ำมันปลาโอเมก้า 3 (1000 มก.)',
+            'ru': 'Добавки: Витамин D3 (2000 МЕ) + Омега-3 рыбий жир (1000 мг)'
+          },
+          dosage: {
+            'zh-TW': '每日午餐後口服 1 顆 (若需緊急手術可隨時停用魚油)',
+            'en': 'Once daily after lunch (Fish oil can be held prior to surgery)',
+            'ja': '1日1回昼食後（手術前は魚油サプリをいつでも休薬可能）',
+            'ko': '매일 점심 식후 복용 (수술 필요 시 오메가-3 즉시 중단 가능)',
+            'vi': 'Uống mỗi ngày sau bữa trưa (Có thể ngưng dầu cá ngay nếu cần phẫu thuật)',
+            'th': 'วันละ 1 ครั้งหลังอาหารกลางวัน (สามารถหยุดน้ำมันปลาได้ทันทีหากต้องผ่าตัด)',
+            'ru': '1 раз в день после обеда (прием Омега-3 можно отменить перед операцией)'
+          },
+          indication: {
+            'zh-TW': '適應症：日常營養補充（無服用抗凝血劑 Warfarin 或阿斯匹靈）',
+            'en': 'Indication: General wellness (NOT taking Warfarin, DOACs, or Aspirin)',
+            'ja': '適応：栄養補給（ワルファリンやアスピリン等の抗血전薬は服用していません）',
+            'ko': '적응증: 일상 영양 보충 (와파린이나 아스피린 등 항응고제는 복용하지 않음)',
+            'vi': 'Chỉ định: Bổ sung dinh dưỡng (KHÔNG dùng thuốc chống đông Warfarin hay Aspirin)',
+            'th': 'ข้อบ่งใช้: บำรุงสุขภาพทั่วไป (ไม่ได้รับประทานยาต้านการแข็งตัวของเลือดหรือแอสไพริน)',
+            'ru': 'Показания: Общеукрепляющее (антикоагулянты и аспирин НЕ принимает)'
+          }
+        }
+      ],
+
+      /* 4. PAST MEDICAL HISTORY & CHRONIC CONDITIONS */
+      pastMedicalHistory: [
+        {
+          condition: {
+            'zh-TW': '原發性高血壓 (Essential Hypertension, ICD-10: I10)',
+            'en': 'Essential Hypertension (ICD-10: I10)',
+            'ja': '本態性高血圧症 (Essential Hypertension, ICD-10: I10)',
+            'ko': '본태성 고혈압 (Essential Hypertension, ICD-10: I10)',
+            'vi': 'Tăng huyết áp vô căn (Essential Hypertension, ICD-10: I10)',
+            'th': 'โรคความดันโลหิตสูงชนิดไม่ทราบสาเหตุ (ICD-10: I10)',
+            'ru': 'Эссенциальная (первичная) гипертензия (МКБ-10: I10)'
+          },
+          status: {
+            'zh-TW': '控制良好 (2023 診斷)',
+            'en': 'Well Controlled (Dx 2023)',
+            'ja': 'コントロール良好 (2023年診断)',
+            'ko': '조절 양호 (2023년 진단)',
+            'vi': 'Kiểm soát tốt (Chẩn đoán 2023)',
+            'th': 'ควบคุมได้ดี (วินิจฉัยปี 2023)',
+            'ru': 'Контролируемая (с 2023 г.)'
+          },
+          details: {
+            'zh-TW': '平時居家血壓維持在 118-126 / 74-80 mmHg，無左心室肥厚或腎功能受損。',
+            'en': 'Home BP averages 118-126 / 74-80 mmHg on Telmisartan 40mg. No end-organ damage or LVH.',
+            'ja': '家庭血圧は 118-126 / 74-80 mmHg で安定。左室肥大や腎機能障害などの臓器障害なし。',
+            'ko': '가정 혈압 평균 118-126 / 74-80 mmHg로 안정적 유지 중. 심비대나 신장 합병증 없음.',
+            'vi': 'Huyết áp tại nhà duy trì 118-126 / 74-80 mmHg. Không có phì đại thất trái hay tổn thương thận.',
+            'th': 'ความดันโลหิตที่บ้านเฉลี่ย 118-126 / 74-80 mmHg ไม่มีภาวะหัวใจห้องล่างซ้ายโตหรือไตเสื่อม',
+            'ru': 'Домашнее АД 118-126 / 74-80 мм рт. ст. Поражения органов-мишеней и ГЛЖ нет.'
+          }
+        },
+        {
+          condition: {
+            'zh-TW': '輕度間歇性支氣管氣喘 (Mild Intermittent Asthma, ICD-10: J45.20)',
+            'en': 'Mild Intermittent Bronchial Asthma (ICD-10: J45.20)',
+            'ja': '軽症間欠型気管支喘息 (Mild Intermittent Asthma, ICD-10: J45.20)',
+            'ko': '경증 간헐성 기관지 천식 (ICD-10: J45.20)',
+            'vi': 'Hen phế quản nhẹ gián đoạn (ICD-10: J45.20)',
+            'th': 'โรคหืดระดับความรุนแรงน้อยแบบเป็นครั้งคราว (ICD-10: J45.20)',
+            'ru': 'Легкая интермиттирующая бронхиальная астма (МКБ-10: J45.20)'
+          },
+          status: {
+            'zh-TW': '穩定無發作',
+            'en': 'Stable / Remission',
+            'ja': '安定（発作なし）',
+            'ko': '안정 상태 (발작 없음)',
+            'vi': 'Ổn định / Hiếm lên cơn',
+            'th': 'อาการคงที่ (ไม่มีอาการกำเริบ)',
+            'ru': 'Ремиссия / Стабильно'
+          },
+          details: {
+            'zh-TW': '過去 2 年內無急診就醫或住院紀錄，從未插管。僅在劇烈溫差或誤食 NSAIDs 時易誘發喘鳴。',
+            'en': 'No ER visits or hospitalizations in the past 2 years; never intubated. Triggered mainly by cold air or NSAIDs.',
+            'ja': '過去2年間で救急受診や入院歴なし、挿管歴なし。急激な寒暖差やNSAIDs内服時のみ誘発リスクあり。',
+            'ko': '최근 2년간 응급실 내원 및 입원 이력 없음, 기관삽관 이력 없음. 급격한 온도 변화 및 NSAIDs 주의.',
+            'vi': 'Không phải cấp cứu hay nhập viện trong 2 năm qua; chưa từng đặt nội khí quản. Khởi phát khi gặp lạnh hoặc NSAIDs.',
+            'th': 'ไม่มีประวัติเข้าห้องฉุกเฉินหรือนอนโรงพยาบาลในรอบ 2 ปี ไม่เคยใส่ท่อช่วยหายใจ มักถูกกระตุ้นด้วยอากาศเย็นจัดหรือยา NSAIDs',
+            'ru': 'Без госпитализаций и интубаций за последние 2 года. Триггеры: холодный воздух и прием НПВП.'
+          }
+        },
+        {
+          condition: {
+            'zh-TW': '胃食道逆流與十二指腸潰瘍病史 (GERD & Resolved Duodenal Ulcer)',
+            'en': 'Gastroesophageal Reflux Disease (GERD) & History of Duodenal Ulcer',
+            'ja': '胃食道逆流症 (GERD) および十二指腸潰瘍の既往（治癒）',
+            'ko': '위식도역류질환 (GERD) 및 십이지장 궤양 완치 이력',
+            'vi': 'Trào ngược dạ dày thực quản (GERD) & Tiền sử loét tá tràng đã lành',
+            'th': 'โรคกรดไหลย้อน (GERD) และประวัติแผลในลำไส้เล็กส่วนต้น (หายแล้ว)',
+            'ru': 'ГЭРБ и язвенная болезнь двенадцатиперстной кишки в анамнезе (зажившая)'
+          },
+          status: {
+            'zh-TW': '已痊癒 (2022 胃鏡追蹤正常)',
+            'en': 'Resolved (EGD Normal)',
+            'ja': '治癒（内視鏡検査正常）',
+            'ko': '완치 (위내시경 정상)',
+            'vi': 'Đã khỏi (Nội soi bình thường)',
+            'th': 'หายดีแล้ว (ส่องกล้องปกติ)',
+            'ru': 'В ремиссии (ЭГДС норма)'
+          },
+          details: {
+            'zh-TW': '2021 年完成幽門螺旋桿菌除菌治療（H. pylori eradicated），2024 年胃鏡檢查僅輕微逆流性食道炎 Grade A。',
+            'en': 'H. pylori successfully eradicated in 2021. 2024 upper endoscopy showed only mild LA Grade A reflux esophagitis.',
+            'ja': '2021年にピロリ菌除菌成功。2024年の上部消化管内視鏡では軽度の逆流性食道炎（LA分類 Grade A）のみ。',
+            'ko': '2021년 헬리코박터 파일로리 제균 치료 완료. 2024년 위내시경 상 경미한 역류성 식도염(LA-A) 외 특이소견 없음.',
+            'vi': 'Đã tiệt trừ thành công vi khuẩn H. pylori năm 2021. Nội soi dạ dày năm 2024 chỉ có viêm thực quản trào ngược nhẹ độ A.',
+            'th': 'กำจัดเชื้อ H. pylori สำเร็จเมื่อปี 2021 ผลส่องกล้องทางเดินอาหารส่วนต้นปี 2024 พบเพียงหลอดอาหารอักเสบเล็กน้อย (Grade A)',
+            'ru': 'Эрадикация H. pylori проведена в 2021 г. На ЭГДС от 2024 г. только минимальный рефлюкс-эзофагит степени А.'
+          }
+        }
+      ],
+
+      /* 5. SURGICAL HISTORY, ANESTHESIA & IMPLANTS */
+      surgeries: [
+        {
+          procedure: {
+            'zh-TW': '腹腔鏡闌尾切除術 (Laparoscopic Appendectomy)',
+            'en': 'Laparoscopic Appendectomy (Acute Appendicitis)',
+            'ja': '腹腔鏡下虫垂切除術 (Laparoscopic Appendectomy)',
+            'ko': '복강경 충수절제술 (급성 충수염 수술)',
+            'vi': 'Phẫu thuật nội soi cắt ruột thừa (Laparoscopic Appendectomy)',
+            'th': 'การผ่าตัดไส้ติ่งผ่านกล้อง (Laparoscopic Appendectomy)',
+            'ru': 'Лапароскопическая аппендэктомия (острый аппендицит)'
+          },
+          year: '2019-08',
+          notes: {
+            'zh-TW': '於台大醫院執行全身氣管內管麻醉，術後恢復順利，無麻醉惡性高熱（Malignant Hyperthermia）或嚴重術後嘔吐反應，體內無殘留金屬夾。',
+            'en': 'Performed at National Taiwan University Hospital under general anesthesia. Smooth recovery; NO malignant hyperthermia or PONV. No metallic clips retained.',
+            'ja': '国立台湾大学病院にて全身麻酔下で施行。麻酔合併症（悪性高熱症や重度嘔気）なし。体内残留金属クリップなし。',
+            'ko': '대만국립대병원에서 전신마취 하 시행. 마취 합병증(악성 고열증 등) 없었으며 체내 잔류 금속 클립 없음.',
+            'vi': 'Thực hiện tại Bệnh viện Đại học Quốc gia Đài Loan dưới gây mê nội khí quản. Hồi phục tốt, không có sốt cao ác tính do gây mê.',
+            'th': 'ผ่าตัดที่โรงพยาบาลมหาวิทยาลัยแห่งชาติไต้หวันภายใต้การดมยาสลบ ฟื้นตัวดีเยี่ยม ไม่มีภาวะแทรกซ้อนจากการดมยาสลบ ไม่มีคลิปโลหะตกค้าง',
+            'ru': 'Выполнена под общей анестезией в госпитале Тайваньского университета. Без осложнений наркоза, металлических клипс нет.'
+          }
+        },
+        {
+          procedure: {
+            'zh-TW': '右下顎第一大臼齒純鈦人工植牙手術 (Dental Implant #46, Grade 4 Titanium)',
+            'en': 'Dental Implant Placement at Lower Right First Molar (#46, Pure Titanium)',
+            'ja': '右下第一大臼歯 (#46) 純チタン製歯科インプラント埋入術',
+            'ko': '우측 하악 제1대구치 (#46) 순수 티타늄 치과 임플란트 식립술',
+            'vi': 'Cấy ghép Implant nha khoa răng hàm lớn thứ nhất hàm dưới bên phải (#46, Titanium)',
+            'th': 'การฝังรากฟันเทียมไทเทเนียมบริสุทธิ์ ซี่กรามล่างขวาซี่ที่ 1 (#46)',
+            'ru': 'Установка титанового дентального имплантата в области зуба #46'
+          },
+          year: '2022-11',
+          notes: {
+            'zh-TW': '局部麻醉下完成，採用非鐵磁性醫療級純鈦植體與全瓷牙冠，可安全接受 1.5T / 3.0T 核磁共振 (MRI) 檢查。',
+            'en': 'Local anesthesia. Non-ferromagnetic medical-grade titanium fixture with zirconia crown. Fully safe for 1.5T and 3.0T MRI scans.',
+            'ja': '局所麻酔下で施行。非磁性体の純チタン製インプラントおよびジルコニアクラウンのため、1.5T / 3.0T MRI検査に完全対応。',
+            'ko': '국소마취 하 시행. 비자성 의료용 순수 티타늄 픽스처 및 지르코니아 크라운으로 1.5T / 3.0T MRI 검사 안전.',
+            'vi': 'Gây tê tại chỗ. Trụ Titanium y tế không từ tính và mão toàn sứ Zirconia, hoàn toàn an toàn khi chụp MRI 1.5T và 3.0T.',
+            'th': 'ทำภายใต้ยาชาเฉพาะที่ ใช้วัสดุไทเทเนียมทางการแพทย์ที่ไม่เป็นแม่เหล็กและครอบฟันเซอร์โคเนีย สามารถเข้าเครื่อง MRI 1.5T / 3.0T ได้อย่างปลอดภัย',
+            'ru': 'Местная анестезия. Неферромагнитный титановый имплантат и циркониевая коронка — безопасно для МРТ 1.5T и 3.0T.'
+          }
+        }
+      ],
+
+      /* 6. FAMILY MEDICAL HISTORY */
+      familyHistory: [
+        {
+          relation: {
+            'zh-TW': '父親 (Father, 現年 54 歲)',
+            'en': 'Father (Age 54, Alive)',
+            'ja': '実父（現在54歳・存命）',
+            'ko': '부친 (현재 54세, 생존)',
+            'vi': 'Cha ruột (54 tuổi, còn sống)',
+            'th': 'บิดา (อายุ 54 ปี มีชีวิตอยู่)',
+            'ru': 'Отец (54 года, жив)'
+          },
+          conditions: {
+            'zh-TW': '原發性高血壓（48 歲診斷，規律服藥控制穩定）；無早發性心肌梗塞病史',
+            'en': 'Essential Hypertension (diagnosed at age 48, well controlled on oral medication); no premature MI',
+            'ja': '本態性高血圧症（48歳診断、内服治療にて安定）。若年性心筋梗塞の既往なし',
+            'ko': '본태성 고혈압(48세 진단, 경구약 복용으로 안정적 유지 중). 조기 심근경색 이력 없음',
+            'vi': 'Tăng huyết áp vô căn (chẩn đoán lúc 48 tuổi, kiểm soát ổn định); không có nhồi máu cơ tim sớm',
+            'th': 'ความดันโลหิตสูง (วินิจฉัยเมื่ออายุ 48 ปี ควบคุมด้วยยาได้ดี); ไม่มีประวัติกล้ามเนื้อหัวใจตายก่อนวัย',
+            'ru': 'Эссенциальная гипертензия (с 48 лет, стабильно на терапии); раннего инфаркта миокарда нет'
+          }
+        },
+        {
+          relation: {
+            'zh-TW': '母親 (Mother, 現年 52 歲)',
+            'en': 'Mother (Age 52, Alive)',
+            'ja': '実母（現在52歳・存命）',
+            'ko': '모친 (현재 52세, 생존)',
+            'vi': 'Mẹ ruột (52 tuổi, còn sống)',
+            'th': 'มารดา (อายุ 52 ปี มีชีวิตอยู่)',
+            'ru': 'Мать (52 года, жива)'
+          },
+          conditions: {
+            'zh-TW': '輕度高血脂症與過敏性鼻炎（飲食與規律運動控制中）',
+            'en': 'Mild Hyperlipidemia & Allergic Rhinitis (managed with diet and regular exercise)',
+            'ja': '軽度脂質異常症およびアレルギー性鼻炎（食事・運動療法で管理中）',
+            'ko': '경미한 고지혈증 및 알레르기 비염 (식이요법 및 운동으로 관리 중)',
+            'vi': 'Rối loạn mỡ máu nhẹ & Viêm mũi dị ứng (kiểm soát bằng chế độ ăn và tập luyện)',
+            'th': 'ไขมันในเลือดสูงเล็กน้อยและภูมิแพ้อากาศ (ควบคุมด้วยอาหารและการออกกำลังกาย)',
+            'ru': 'Умеренная гиперлипидемия и аллергический ринит (контроль диетой и спортом)'
+          }
+        },
+        {
+          relation: {
+            'zh-TW': '祖父母與其他家族史 (Grandparents & Genetic Risk)',
+            'en': 'Grandparents & Hereditary Conditions',
+            'ja': '祖父母・遺伝性疾患の家族歴',
+            'ko': '조부모 및 기타 유전 질환 가족력',
+            'vi': 'Ông bà & Tiền sử bệnh di truyền',
+            'th': 'ปู่ย่าตายาย และประวัติโรคทางพันธุกรรม',
+            'ru': 'Бабушки/дедушки и наследственные заболевания'
+          },
+          conditions: {
+            'zh-TW': '祖父有第二型糖尿病史；外祖母有缺血性腦中風病史（78 歲）；家族無早發性猝死、無遺傳性癌症或蠶豆症 (G6PD)。',
+            'en': 'Paternal grandfather had Type 2 DM; maternal grandmother had ischemic stroke at age 78. NO family history of sudden cardiac death or G6PD deficiency.',
+            'ja': '父方祖父に2型糖尿病、母方祖母に脳梗塞既往（78歳）。若年性突然死、遺伝性癌、G6PD欠損症の家族歴なし。',
+            'ko': '조부 제2형 당뇨병, 외조모 뇌경색 이력(78세). 가족 내 급사, 유전성 암, G6PD 결핍증 이력 없음.',
+            'vi': 'Ông nội bị tiểu đường tuýp 2; bà ngoại từng bị đột quỵ năm 78 tuổi. Gia đình KHÔNG có tiền sử đột tử sớm hay thiếu men G6PD.',
+            'th': 'ปู่มีประวัติเบาหวานชนิดที่ 2 ยายมีประวัติโรคหลอดเลือดสมองตีบเมื่ออายุ 78 ปี ไม่มีประวัติคนในครอบครัวเสียชีวิตเฉียบพลัน หรือพร่องเอนไซม์ G6PD',
+            'ru': 'У деда по отцу — СД 2 типа; у бабушки по матери — ишемический инсульт в 78 лет. Семейного анамнеза внезапной смерти или дефицита G6PD нет.'
+          }
+        }
+      ],
+
+      /* 7. PERSONAL, SOCIAL & TRAVEL HISTORY */
+      socialHistory: [
+        {
+          label: {
+            'zh-TW': '吸菸史 (Smoking Status)',
+            'en': 'Tobacco / Smoking',
+            'ja': '喫煙歴 (Smoking)',
+            'ko': '흡연력 (Smoking)',
+            'vi': 'Hút thuốc lá (Smoking)',
+            'th': 'ประวัติการสูบบุหรี่',
+            'ru': 'Курение (Smoking)'
+          },
+          value: {
+            'zh-TW': '從不吸菸 (Never Smoker，亦無使用電子煙)',
+            'en': 'Never Smoker (0 pack-years; no vaping)',
+            'ja': '非喫煙者（生涯喫煙歴なし・電子タバコなし）',
+            'ko': '비흡연자 (평생 금연, 전자담배 미사용)',
+            'vi': 'Không bao giờ hút thuốc (Không dùng thuốc lá điện tử)',
+            'th': 'ไม่เคยสูบบุหรี่ (และไม่ใช้บุหรี่ไฟฟ้า)',
+            'ru': 'Никогда не курил (включая вейпы)'
+          }
+        },
+        {
+          label: {
+            'zh-TW': '飲酒習慣 (Alcohol Use)',
+            'en': 'Alcohol Consumption',
+            'ja': '飲酒歴 (Alcohol)',
+            'ko': '음주 습관 (Alcohol)',
+            'vi': 'Sử dụng rượu bia',
+            'th': 'การดื่มเครื่องดื่มแอลกอฮอล์',
+            'ru': 'Употребление алкоголя'
+          },
+          value: {
+            'zh-TW': '偶爾社交小酌（每月 1-2 次紅酒，每次 < 150 mL）',
+            'en': 'Occasional social drinker (1-2 glasses of wine/month)',
+            'ja': '機会飲酒のみ（月に1〜2回、ワイン1杯程度）',
+            'ko': '가끔 사교적 음주 (월 1~2회 와인 1잔 미만)',
+            'vi': 'Uống xã giao thỉnh thoảng (1-2 ly rượu vang/tháng)',
+            'th': 'ดื่มเพื่อเข้าสังคมเป็นครั้งคราว (ไวน์ 1-2 แก้วต่อเดือน)',
+            'ru': 'Редко, социально (1–2 бокала вина в месяц)'
+          }
+        },
+        {
+          label: {
+            'zh-TW': '職業與環境暴露 (Occupation)',
+            'en': 'Occupation & Exposures',
+            'ja': '職業・有害物質曝露',
+            'ko': '직업 및 환경 노출',
+            'vi': 'Nghề nghiệp & Tiếp xúc',
+            'th': 'อาชีพและการสัมผัสสารเคมี',
+            'ru': 'Профессия и вредности'
+          },
+          value: {
+            'zh-TW': '軟體產品設計師（室內辦公室，無粉塵、輻射或化學溶劑暴露）',
+            'en': 'Software Product Designer (Office work; no chemical/dust exposure)',
+            'ja': 'ITプロダクトデザイナー（デスクワーク、粉塵・化学物質曝露なし）',
+            'ko': '소프트웨어 프로덕트 디자이너 (실내 사무직, 유해물질 노출 없음)',
+            'vi': 'Thiết kế sản phẩm phần mềm (Làm việc văn phòng, không tiếp xúc hóa chất)',
+            'th': 'นักออกแบบซอฟต์แวร์ (ทำงานในสำนักงาน ไม่สัมผัสฝุ่นหรือสารเคมี)',
+            'ru': 'IT-дизайнер (офисная работа, без профессиональных вредностей)'
+          }
+        },
+        {
+          label: {
+            'zh-TW': '運動與體能狀態 (Exercise & Functional Status)',
+            'en': 'Physical Activity & Functional Capacity',
+            'ja': '運動習慣・身体機能 (ADL)',
+            'ko': '운동 습관 및 신체 기능',
+            'vi': 'Vận động & Thể lực',
+            'th': 'การออกกำลังกายและสมรรถภาพร่างกาย',
+            'ru': 'Физическая активность'
+          },
+          value: {
+            'zh-TW': '每週慢跑與重訓 3 次，可輕鬆爬 4 層樓梯不喘 (> 7 METs)',
+            'en': 'Jogging & strength training 3x/week; climbs 4 flights of stairs easily (> 7 METs)',
+            'ja': '週3回のジョギングと筋トレ。息切れせず階段4階まで昇降可能 (> 7 METs)',
+            'ko': '주 3회 조깅 및 근력 운동, 숨차지 않고 4층 계단 오르기 가능 (> 7 METs)',
+            'vi': 'Chạy bộ & tập tạ 3 lần/tuần; leo 4 tầng cầu thang không khó thở (> 7 METs)',
+            'th': 'วิ่งจ็อกกิ้งและเวทเทรนนิ่งสัปดาห์ละ 3 ครั้ง เดินขึ้นบันได 4 ชั้นได้ไม่เหนื่อยหอบ (> 7 METs)',
+            'ru': 'Бег и силовые тренировки 3 раза в неделю; легко поднимается на 4 этаж (> 7 METs)'
+          }
+        },
+        {
+          label: {
+            'zh-TW': '飲食習慣與宗教禁忌 (Diet & Religious Restrictions)',
+            'en': 'Diet & Medical/Religious Restrictions',
+            'ja': '食事習慣・輸血や宗教上の制限',
+            'ko': '식습관 및 종교적/수혈 제한사항',
+            'vi': 'Chế độ ăn & Kiêng kỵ tôn giáo/Truyền máu',
+            'th': 'อาหารและข้อจำกัดทางศาสนา/การรับเลือด',
+            'ru': 'Диета и религиозные ограничения'
+          },
+          value: {
+            'zh-TW': '均衡飲食（避開蝦蟹甲殼類）；無宗教飲食限制，可正常接受輸血與血液製品',
+            'en': 'Omnivore (avoids shellfish); NO religious restrictions; accepts blood transfusions',
+            'ja': '一般食（エビ・カニ等の甲殻類は除去）。輸血や血液製剤の使用に制限なし',
+            'ko': '일반식 (갑각류 제외). 종교적 제한 없으며 수혈 및 혈액제제 투여 가능',
+            'vi': 'Ăn uống bình thường (kiêng tôm cua); KHÔNG có hạn chế tôn giáo, nhận truyền máu bình thường',
+            'th': 'อาหารทั่วไป (งดกุ้งปู); ไม่มีข้อห้ามทางศาสนา สามารถรับเลือดและส่วนประกอบของเลือดได้ตามปกติ',
+            'ru': 'Обычная диета (исключая ракообразных); переливание крови разрешено'
+          }
+        },
+        {
+          label: {
+            'zh-TW': '近期海外旅遊史 (Recent Travel History)',
+            'en': 'Recent International Travel',
+            'ja': '最近の海外渡航歴',
+            'ko': '최근 해외 여행력',
+            'vi': 'Lịch sử du lịch nước ngoài gần đây',
+            'th': 'ประวัติการเดินทางไปต่างประเทศล่าสุด',
+            'ru': 'Недавние зарубежные поездки'
+          },
+          value: {
+            'zh-TW': '過去 6 個月曾造訪日本東京與泰國曼谷；無瘧疾或黃熱病疫區暴露史',
+            'en': 'Visited Tokyo (Japan) & Bangkok (Thailand) within past 6 months; no malaria/yellow fever endemic exposure',
+            'ja': '過去6ヶ月以内に日本（東京）・タイ（バンコク）へ渡航。マラリア汚染地域への渡航なし',
+            'ko': '최근 6개월 내 일본(도쿄), 태국(방콕) 방문. 말라리아/황열병 유행지역 방문력 없음',
+            'vi': 'Đã đến Tokyo (Nhật Bản) & Bangkok (Thái Lan) trong 6 tháng qua; không đi qua vùng dịch sốt rét',
+            'th': 'เดินทางไปโตเกียว (ญี่ปุ่น) และกรุงเทพฯ ในช่วง 6 เดือนที่ผ่านมา ไม่มีประวัติเข้าพื้นที่ไข้มาลาเรีย',
+            'ru': 'Посещал Токио и Бангкок за последние 6 мес.; в эндемичных по малярии регионах не был'
+          }
+        }
+      ],
+
+      /* 8. BASELINE VITAL SIGNS & RECENT LAB SUMMARY */
+      vitalsAndLabs: [
+        {
+          name: {
+            'zh-TW': '平時基準血壓 (Baseline BP)',
+            'en': 'Baseline Blood Pressure',
+            'ja': '平常時血圧 (Baseline BP)',
+            'ko': '평소 기준 혈압',
+            'vi': 'Huyết áp nền (Baseline BP)',
+            'th': 'ความดันโลหิตพื้นฐาน',
+            'ru': 'Рабочее АД в покое'
+          },
+          reading: '120 / 76 mmHg',
+          date: 'Resting Morning Avg (2026)'
+        },
+        {
+          name: {
+            'zh-TW': '安靜心率與血氧 (HR & SpO2)',
+            'en': 'Resting HR & SpO2',
+            'ja': '安静時心拍数・酸素飽和度',
+            'ko': '안정시 심박수 및 산소포화도',
+            'vi': 'Nhịp tim nghỉ & SpO2',
+            'th': 'ชีพจรขณะพัก และออกซิเจนปลายนิ้ว',
+            'ru': 'ЧСС в покое и SpO2'
+          },
+          reading: '64 bpm / 99%',
+          date: 'Baseline Room Air'
+        },
+        {
+          name: {
+            'zh-TW': '空腹血糖與糖化血色素 (HbA1c)',
+            'en': 'Fasting Glucose / HbA1c',
+            'ja': '空腹時血糖 / HbA1c',
+            'ko': '공복혈당 / 당화혈색소(HbA1c)',
+            'vi': 'Đường huyết đói / HbA1c',
+            'th': 'น้ำตาลสะสม (FPG / HbA1c)',
+            'ru': 'Глюкоза натощак / HbA1c'
+          },
+          reading: '92 mg/dL / 5.4%',
+          date: 'Lab Check: 2026-09'
+        },
+        {
+          name: {
+            'zh-TW': '腎功能指標 (Creatinine / eGFR)',
+            'en': 'Renal Function (Cr / eGFR)',
+            'ja': '腎機能 (Cr / eGFR)',
+            'ko': '신장기능 (Cr / eGFR)',
+            'vi': 'Chức năng thận (Cr / eGFR)',
+            'th': 'การทำงานของไต (Cr / eGFR)',
+            'ru': 'Функция почек (Кр / СКФ)'
+          },
+          reading: '0.88 mg/dL / 98',
+          date: 'mL/min/1.73m² (2026-09)'
+        },
+        {
+          name: {
+            'zh-TW': '肝功能與低密度膽固醇 (ALT / LDL)',
+            'en': 'Liver ALT & LDL-Cholesterol',
+            'ja': '肝機能 (ALT) / LDLコレステロール',
+            'ko': '간수치(ALT) / LDL 콜레스테롤',
+            'vi': 'Men gan ALT & Mỡ máu LDL-C',
+            'th': 'เอนไซม์ตับ ALT / ไขมัน LDL',
+            'ru': 'АЛТ и ЛПНП-холестерин'
+          },
+          reading: '21 U/L / 86 mg/dL',
+          date: 'Lab Check: 2026-09'
+        },
+        {
+          name: {
+            'zh-TW': '平時心電圖基準 (Baseline 12-Lead ECG)',
+            'en': 'Baseline 12-Lead ECG',
+            'ja': '基準12誘導心電図 (ECG)',
+            'ko': '기본 심전도 소견 (Baseline ECG)',
+            'vi': 'Điện tâm đồ nền (ECG 12 chuyển đạo)',
+            'th': 'คลื่นไฟฟ้าหัวใจพื้นฐาน (ECG)',
+            'ru': 'Базовая ЭКГ (12 отведений)'
+          },
+          reading: 'Normal Sinus Rhythm',
+          date: 'No bundle branch block / QTc 410ms'
+        }
+      ],
+
+      /* 9. IMMUNIZATION & VACCINATION RECORD */
+      vaccines: [
+        {
+          name: {
+            'zh-TW': '破傷風、減量白喉混合疫苗 (Tdap Booster)',
+            'en': 'Tetanus, Diphtheria, Pertussis Booster (Tdap)',
+            'ja': '破傷風・ジフテリア・百日咳混合ワクチン (Tdap)',
+            'ko': '파상풍·디프테리아·백일해 혼합백신 (Tdap 추가접종)',
+            'vi': 'Vắc-xin Uốn ván - Bạch hầu - Ho gà (Tdap Booster)',
+            'th': 'วัคซีนกระตุ้นบาดทะยัก คอตีบ ไอกรน (Tdap Booster)',
+            'ru': 'Вакцинация против столбняка, дифтерии и коклюша (АДС-М / Tdap)'
+          },
+          date: '2024-03 (Valid until 2034)',
+          note: {
+            'zh-TW': '於 2024 年 3 月完成追加接種，目前仍在 10 年保護效期內（外傷急診重要參考）。',
+            'en': 'Booster administered March 2024; within active 10-year protection window for trauma care.',
+            'ja': '2024年3月に追加接種済み（外傷時の破傷風トキソイド10年有効期間内）。',
+            'ko': '2024년 3월 추가 접종 완료 (외상 응급처치 시 10년 유효기간 내 포함).',
+            'vi': 'Đã tiêm nhắc lại tháng 03/2024; còn trong thời hạn bảo vệ 10 năm khi xử trí vết thương.',
+            'th': 'ฉีดกระตุ้นเมื่อมีนาคม 2024 ยังอยู่ในระยะคุ้มครอง 10 ปีสำหรับแผลอุบัติเหตุ',
+            'ru': 'Ревакцинация проведена в марте 2024 г. (активный 10-летний иммунитет при травмах).'
+          }
+        },
+        {
+          name: {
+            'zh-TW': 'B 型肝炎疫苗與表面抗體 (Hepatitis B & HBsAb Status)',
+            'en': 'Hepatitis B Vaccine & Surface Antibody (HBsAb)',
+            'ja': 'B型肝炎ワクチンおよびHBs抗体ステータス',
+            'ko': 'B형 간염 예방접종 및 표면항체 (HBsAb 양성)',
+            'vi': 'Vắc-xin Viêm gan B & Kháng thể bề mặt (HBsAb)',
+            'th': 'วัคซีนไวรัสตับอักเสบบี และสถานะภูมิคุ้มกัน (HBsAb)',
+            'ru': 'Вакцинация против гепатита B и статус антител (Anti-HBs)'
+          },
+          date: 'HBsAb Positive (+)',
+          note: {
+            'zh-TW': 'HBsAg 陰性 (-)，HBsAb 表面抗體陽性 (+ > 100 mIU/mL)，具完整保護力。',
+            'en': 'HBsAg Negative (-), HBsAb Positive (+ > 100 mIU/mL); immune to Hepatitis B.',
+            'ja': 'HBs抗原陰性 (-)、HBs抗体陽性 (+ > 100 mIU/mL) であり十分な免疫を保有。',
+            'ko': 'HBsAg 음성(-), HBsAb 항체 양성(+ > 100 mIU/mL)으로 충분한 면역력 보유.',
+            'vi': 'HBsAg Âm tính (-), Kháng thể HBsAb Dương tính (+ > 100 mIU/mL), có miễn dịch bảo vệ.',
+            'th': 'HBsAg เป็นลบ (-), มีภูมิคุ้มกัน HBsAb เป็นบวก (+ > 100 mIU/mL)',
+            'ru': 'HBsAg отрицательный (-), антитела Anti-HBs положительные (+ > 100 мМЕ/мл).'
+          }
+        },
+        {
+          name: {
+            'zh-TW': '季節性四價流感疫苗與 COVID-19 疫苗 (Influenza & COVID-19)',
+            'en': 'Annual Quadrivalent Influenza & COVID-19 Updated Booster',
+            'ja': '季節性4価インフルエンザワクチン・新型コロナ追加接種',
+            'ko': '계절성 4가 인플루엔자 독감 백신 및 코로나19 백신',
+            'vi': 'Vắc-xin Cúm tứ giá hàng năm & COVID-19 nhắc lại',
+            'th': 'วัคซีนไข้หวัดใหญ่ 4 สายพันธุ์ประจำปี และวัคซีนโควิด-19',
+            'ru': 'Ежегодная вакцина против гриппа и бустер COVID-19'
+          },
+          date: '2026-10',
+          note: {
+            'zh-TW': '已完成當年度最新流感疫苗接種，無任何疫苗接種後不良反應。',
+            'en': 'Up to date for the 2026 autumn/winter season; no post-vaccination adverse reactions.',
+            'ja': '2026年秋冬シーズンの接種完了。副反応歴なし。',
+            'ko': '2026년 절기 최신 예방접종 완료, 접종 후 이상반응 없음.',
+            'vi': 'Đã tiêm chủng đầy đủ cho mùa thu đông 2026; không có phản ứng phụ.',
+            'th': 'ฉีดวัคซีนประจำปี 2026 เรียบร้อยแล้ว ไม่มีอาการไม่พึงประสงค์หลังฉีด',
+            'ru': 'Вакцинация сезона 2026 г. пройдена без поствакцинальных реакций.'
+          }
+        }
+      ],
+
+      /* 10. EMERGENCY CONTACTS, PRIMARY HOSPITAL & TRAVEL INSURANCE */
+      contacts: [
+        {
+          role: {
+            'zh-TW': '第一順位緊急聯絡人 (Primary ICE Contact - 家屬)',
+            'en': 'Primary Emergency Contact (ICE - Next of Kin)',
+            'ja': '第一緊急連絡先（家族・親族）',
+            'ko': '제1 비상 연락처 (가족 / 직계존속)',
+            'vi': 'Người liên hệ khẩn cấp số 1 (Gia đình)',
+            'th': 'ผู้ติดต่อฉุกเฉินอันดับ 1 (ครอบครัว)',
+            'ru': 'Основной экстренный контакт (Семья / Родственники)'
+          },
+          info: 'ICE_DYNAMIC_SLOT', // Replaced dynamically from patient profile
+          details: {
+            'zh-TW': '可通華語、英語；具醫療代理決策權（Healthcare Proxy）',
+            'en': 'Speaks Mandarin & English; authorized Healthcare Proxy / Medical Decision Maker.',
+            'ja': '中国語・英語対応可能。医療上の代理意思決定権（Healthcare Proxy）を有します。',
+            'ko': '중국어 및 영어 소통 가능. 의료적 대리 의사결정권자(Healthcare Proxy).',
+            'vi': 'Nói tiếng Trung & tiếng Anh; Người đại diện hợp pháp quyết định y tế.',
+            'th': 'สื่อสารภาษาจีนและอังกฤษได้ เป็นผู้มีอำนาจตัดสินใจทางการแพทย์แทนผู้ป่วย',
+            'ru': 'Говорит по-китайски и по-английски; уполномочена принимать медицинские решения.'
+          }
+        },
+        {
+          role: {
+            'zh-TW': '平時主治醫院與家庭醫師 (Primary Hospital & Physician)',
+            'en': 'Home Institution & Primary Care Physician',
+            'ja': 'かかりつけ医療機関・主治医（台湾）',
+            'ko': '평소 주치의 및 다니는 병원 (대만)',
+            'vi': 'Bệnh viện đăng ký & Bác sĩ điều trị chính (Đài Loan)',
+            'th': 'โรงพยาบาลประจำและแพทย์เจ้าของไข้ (ไต้หวัน)',
+            'ru': 'Основное медицинское учреждение и лечащий врач'
+          },
+          info: '國立臺灣大學醫學院附設醫院 (NTUH, Taipei) / +886-2-2312-3456',
+          details: {
+            'zh-TW': '家醫科暨心臟內科門診追蹤（病歷摘要已同步於台灣健保雲端健康存摺）',
+            'en': 'National Taiwan University Hospital (Cardiology & Family Medicine Dept.); synced with Taiwan NHI Cloud.',
+            'ja': '国立台湾大学医学部附属病院（循環器内科・家庭医学科）。台湾健保クラウドに全記録同期済み。',
+            'ko': '대만국립대학교병원 (순환기내과 및 가정의학과 정기 외래 추적 중).',
+            'vi': 'Bệnh viện Đại học Quốc gia Đài Loan (Khoa Tim mạch & Y học gia đình).',
+            'th': 'โรงพยาบาลมหาวิทยาลัยแห่งชาติไต้หวัน (แผนกอายุรกรรมโรคหัวใจและเวชศาสตร์ครอบครัว)',
+            'ru': 'Госпиталь Национального университета Тайваня (отделение кардиологии и семейной медицины).'
+          }
+        },
+        {
+          role: {
+            'zh-TW': '海外急難醫療保險與國際救援專線 (Travel Medical Insurance)',
+            'en': 'International Travel Medical Insurance & SOS Assistance',
+            'ja': '海外旅行傷害保険・24時間国際医療アシスタンス',
+            'ko': '해외여행자 의료보험 및 24시간 긴급의료지원센터',
+            'vi': 'Bảo hiểm Y tế Du lịch Quốc tế & Hỗ trợ Cấp cứu 24/7',
+            'th': 'ประกันการเดินทางต่างประเทศ และศูนย์ช่วยเหลือทางการแพทย์ 24 ชม.',
+            'ru': 'Международная медицинская страховка и круглосуточный ассистанс'
+          },
+          info: 'Policy No: TW-INTL-9928410 / 24h Global Assist: +886-2-6619-9999',
+          details: {
+            'zh-TW': '涵蓋海外急診醫療費用代墊、住院擔保與跨國醫療專機轉送服務（住院時請協助聯繫保險救援中心）',
+            'en': 'Covers emergency inpatient guarantee of payment (GOP) and medical repatriation. Please contact 24h hotline upon admission.',
+            'ja': '救急医療費の支払保証（GOP）および医療搬送カバー。入院時は上記24時間ホットラインへご連絡ください。',
+            'ko': '응급 의료비 지불보증(GOP) 및 의료 이송 보장. 입원 필요 시 위 24시간 핫라인으로 연락 바랍니다.',
+            'vi': 'Bảo lãnh viện phí cấp cứu (GOP) và vận chuyển y tế quốc tế. Vui lòng gọi hotline 24/7 khi nhập viện.',
+            'th': 'คุ้มครองการค้ำประกันค่ารักษาพยาบาลฉุกเฉิน (GOP) และการเคลื่อนย้ายผู้ป่วย กรุณาติดต่อสายด่วน 24 ชม.',
+            'ru': 'Покрывает гарантию оплаты экстренной госпитализации (GOP) и медицинскую эвакуацию.'
+          }
+        }
+      ]
+    };
+
+    /**
+     * 4. HELPER FUNCTIONS FOR BILINGUAL RENDERING & PROFILE PERSISTENCE
+     */
+    function getActiveProfile() {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+          return { ...defaultPatientProfile, ...JSON.parse(saved) };
+        }
+      } catch (e) {
+        console.warn('LocalStorage read error:', e);
+      }
+      return { ...defaultPatientProfile };
+    }
+
+    // Returns the localized text and appends a Traditional Chinese sub-label when viewing a foreign language
+    function renderDualText(multiLangObj) {
+      const primaryText = multiLangObj[currentLang] || multiLangObj['en'] || multiLangObj['zh-TW'];
+      if (currentLang === 'zh-TW') {
+        return `<span>${primaryText}</span>`;
+      }
+      const zhText = multiLangObj['zh-TW'];
+      return `<span>${primaryText}</span><span class="bilingual-sub">🇹🇼 中文對照：${zhText}</span>`;
+    }
+
+    function calculateBMI(heightCm, weightKg) {
+      const h = parseFloat(heightCm) / 100;
+      const w = parseFloat(weightKg);
+      if (!h || !w || h <= 0) return '--';
+      return (w / (h * h)).toFixed(1);
+    }
+
+    // Mosteller formula for Body Surface Area (m²): sqrt((heightCm * weightKg) / 3600)
+    function calculateBSA(heightCm, weightKg) {
+      const h = parseFloat(heightCm);
+      const w = parseFloat(weightKg);
+      if (!h || !w || h <= 0 || w <= 0) return '--';
+      return Math.sqrt((h * w) / 3600).toFixed(2);
+    }
+
+    /**
+     * 5. MASTER RENDER ENGINE
+     */
+    function renderAll() {
+      const ui = uiDictionary[currentLang];
+      const zhUi = uiDictionary['zh-TW'];
+      const profile = getActiveProfile();
+      const bmi = calculateBMI(profile.heightCm, profile.weightKg);
+      const bsa = calculateBSA(profile.heightCm, profile.weightKg);
+
+      // Update Top Header & Action Buttons
+      document.getElementById('ui-app-title').textContent = ui.appTitle;
+      document.getElementById('ui-app-subtitle').textContent = ui.appSubtitle;
+      document.getElementById('ui-btn-bilingual').textContent = bilingualMode ? ui.btnBilingualOn : ui.btnBilingualOff;
+      document.getElementById('ui-btn-sos').textContent = ui.btnSos;
+      document.getElementById('ui-btn-edit').textContent = ui.btnEdit;
+      document.getElementById('ui-btn-print').textContent = ui.btnPrint;
+      document.getElementById('ui-doc-greeting-title').querySelector('span').textContent = ui.docGreetingTitle;
+      document.getElementById('ui-doc-greeting-body').textContent = ui.docGreetingBody;
+      document.getElementById('ui-last-updated').textContent = ui.lastUpdated;
+
+      // Update Section Titles (with Bilingual sub-label if foreign language)
+      const sectionKeys = [
+        ['sec-title-allergies', 'sec-tag-allergies', 'allergies', 'allergiesTag'],
+        ['sec-title-meds', 'sec-tag-meds', 'meds', 'medsTag'],
+        ['sec-title-pmh', 'sec-tag-pmh', 'pmh', 'pmhTag'],
+        ['sec-title-surgery', 'sec-tag-surgery', 'surgery', 'surgeryTag'],
+        ['sec-title-family', 'sec-tag-family', 'family', 'familyTag'],
+        ['sec-title-social', 'sec-tag-social', 'social', 'socialTag'],
+        ['sec-title-vitals', 'sec-tag-vitals', 'vitals', 'vitalsTag'],
+        ['sec-title-vaccines', 'sec-tag-vaccines', 'vaccines', 'vaccinesTag'],
+        ['sec-title-contacts', 'sec-tag-contacts', 'contacts', 'contactsTag']
+      ];
+
+      sectionKeys.forEach(([titleId, tagId, key, tagKey]) => {
+        const titleEl = document.getElementById(titleId);
+        const tagEl = document.getElementById(tagId);
+        if (currentLang === 'zh-TW') {
+          titleEl.innerHTML = ui.sections[key];
+        } else {
+          titleEl.innerHTML = `${ui.sections[key]} <span class="bilingual-sub" style="font-size:0.78rem;">${zhUi.sections[key]}</span>`;
+        }
+        tagEl.textContent = ui.sections[tagKey];
+      });
+
+      // 1. Render Patient Identity & Hero Badges (use localized phonetic name if matching default)
+      const displayName = (profile.name === defaultPatientProfile.name)
+        ? (localizedPatientNames[currentLang] || profile.name)
+        : profile.name;
+      const displayDob = (profile.dob === defaultPatientProfile.dob)
+        ? (localizedDobDisplay[currentLang] || profile.dob)
+        : profile.dob;
+
+      document.getElementById('patient-name-display').textContent = displayName;
+      document.getElementById('patient-sub-badges').innerHTML = `
+        <span>🎂 <strong>${ui.labels.dob}:</strong> ${displayDob}</span>
+        <span>🪪 <strong>${ui.labels.passport}:</strong> ${profile.passport}</span>
+        <span>⚧ <strong>${ui.labels.sex}:</strong> ${clinicalRecordData.demographics.sex[currentLang]}</span>
+      `;
+
+      document.getElementById('hero-vital-badges').innerHTML = `
+        <div class="vital-stat-box blood-highlight">
+          <span class="vital-stat-label">${ui.labels.bloodType}</span>
+          <div class="vital-stat-value">🩸 ${profile.bloodType}</div>
+        </div>
+        <div class="vital-stat-box">
+          <span class="vital-stat-label">${ui.labels.bmi}</span>
+          <div class="vital-stat-value">
+            ${profile.heightCm} cm / ${profile.weightKg} kg
+            <small style="font-size:0.78rem; color:var(--text-secondary); display:block; margin-top:2px;">
+              BMI ${bmi} kg/m² · BSA ${bsa} m²
+            </small>
+          </div>
+        </div>
+      `;
+
+      document.getElementById('demographics-grid').innerHTML = `
+        <div class="demo-item">
+          <span class="demo-label">${ui.labels.nationality} ${currentLang !== 'zh-TW' ? `<span class="bilingual-sub">${zhUi.labels.nationality}</span>` : ''}</span>
+          <div class="demo-value">${renderDualText(clinicalRecordData.demographics.nationality)}</div>
+        </div>
+        <div class="demo-item">
+          <span class="demo-label">${ui.labels.mriStatus} ${currentLang !== 'zh-TW' ? `<span class="bilingual-sub">${zhUi.labels.mriStatus}</span>` : ''}</span>
+          <div class="demo-value" style="color:var(--accent-sage);">${renderDualText(clinicalRecordData.demographics.mriSafety)}</div>
+        </div>
+        <div class="demo-item">
+          <span class="demo-label">${ui.labels.codeStatus} ${currentLang !== 'zh-TW' ? `<span class="bilingual-sub">${zhUi.labels.codeStatus}</span>` : ''}</span>
+          <div class="demo-value">${renderDualText(clinicalRecordData.demographics.codeStatus)}</div>
+        </div>
+        <div class="demo-item">
+          <span class="demo-label">${ui.labels.visionDental} ${currentLang !== 'zh-TW' ? `<span class="bilingual-sub">${zhUi.labels.visionDental}</span>` : ''}</span>
+          <div class="demo-value">${renderDualText(clinicalRecordData.demographics.visionDental)}</div>
+        </div>
+      `;
+
+      // 2. Render Allergies Banner
+      const allergyContainer = document.getElementById('allergy-list-container');
+      allergyContainer.innerHTML = clinicalRecordData.allergies.map(item => `
+        <div class="allergy-chip-card">
+          <div class="allergy-chip-top">
+            <div class="allergy-substance">${renderDualText(item.substance)}</div>
+            <span class="severity-badge ${item.severity === 'moderate' ? 'moderate' : ''}">
+              ${item.badgeText[currentLang]}
+            </span>
+          </div>
+          <div class="allergy-reaction">${renderDualText(item.reaction)}</div>
+        </div>
+      `).join('');
+
+      // 3. Render Current Medications
+      const medsContainer = document.getElementById('meds-list-container');
+      medsContainer.innerHTML = clinicalRecordData.medications.map(med => `
+        <div class="record-item">
+          <div class="record-item-header">
+            <div class="record-item-title">${renderDualText(med.name)}</div>
+            <span class="med-dosage-tag">${med.dosage[currentLang]}</span>
+          </div>
+          ${currentLang !== 'zh-TW' ? `<div class="bilingual-sub">用法對照：${med.dosage['zh-TW']}</div>` : ''}
+          <div class="record-item-note">${renderDualText(med.indication)}</div>
+        </div>
+      `).join('');
+
+      // 4. Render Past Medical History
+      const pmhContainer = document.getElementById('pmh-list-container');
+      pmhContainer.innerHTML = clinicalRecordData.pastMedicalHistory.map(pmh => `
+        <div class="record-item">
+          <div class="record-item-header">
+            <div class="record-item-title">${renderDualText(pmh.condition)}</div>
+            <span class="status-pill">${pmh.status[currentLang]}</span>
+          </div>
+          <div class="record-item-note">${renderDualText(pmh.details)}</div>
+        </div>
+      `).join('');
+
+      // 5. Render Surgical History & Implants
+      const surgeryContainer = document.getElementById('surgery-list-container');
+      surgeryContainer.innerHTML = clinicalRecordData.surgeries.map(surg => `
+        <div class="record-item">
+          <div class="record-item-header">
+            <div class="record-item-title">${renderDualText(surg.procedure)}</div>
+            <span class="status-pill warm">📅 ${surg.year}</span>
+          </div>
+          <div class="record-item-note">${renderDualText(surg.notes)}</div>
+        </div>
+      `).join('');
+
+      // 6. Render Family Medical History
+      const familyContainer = document.getElementById('family-list-container');
+      familyContainer.innerHTML = clinicalRecordData.familyHistory.map(fam => `
+        <div class="record-item">
+          <div class="record-item-header">
+            <div class="record-item-title">${renderDualText(fam.relation)}</div>
+          </div>
+          <div class="record-item-note">${renderDualText(fam.conditions)}</div>
+        </div>
+      `).join('');
+
+      // 7. Render Personal & Social History
+      const socialContainer = document.getElementById('social-list-container');
+      socialContainer.innerHTML = clinicalRecordData.socialHistory.map(soc => `
+        <div class="kv-box">
+          <div class="kv-label">${renderDualText(soc.label)}</div>
+          <div class="kv-val">${renderDualText(soc.value)}</div>
+        </div>
+      `).join('');
+
+      // 8. Render Baseline Vitals & Lab Reference
+      const vitalsContainer = document.getElementById('vitals-list-container');
+      vitalsContainer.innerHTML = clinicalRecordData.vitalsAndLabs.map(v => `
+        <div class="vital-card">
+          <div class="vital-card-name">${renderDualText(v.name)}</div>
+          <div class="vital-card-reading">${v.reading}</div>
+          <div class="vital-card-date">${v.date}</div>
+        </div>
+      `).join('');
+
+      // 9. Render Immunization Record
+      const vaccineContainer = document.getElementById('vaccine-list-container');
+      vaccineContainer.innerHTML = clinicalRecordData.vaccines.map(vac => `
+        <div class="record-item">
+          <div class="record-item-header">
+            <div class="record-item-title">${renderDualText(vac.name)}</div>
+            <span class="status-pill">💉 ${vac.date}</span>
+          </div>
+          <div class="record-item-note">${renderDualText(vac.note)}</div>
+        </div>
+      `).join('');
+
+      // 10. Render Emergency Contacts & Insurance
+      const contactsContainer = document.getElementById('contacts-list-container');
+      contactsContainer.innerHTML = clinicalRecordData.contacts.map(ct => {
+        const contactHeaderInfo = ct.info === 'ICE_DYNAMIC_SLOT'
+          ? `${profile.iceName} | 📞 <a href="tel:${profile.icePhone}" style="color:var(--accent-terracotta-dark); text-decoration:underline;">${profile.icePhone}</a>`
+          : ct.info;
+        return `
+          <div class="record-item">
+            <div class="record-item-header">
+              <div class="record-item-title">${renderDualText(ct.role)}</div>
+            </div>
+            <div style="font-weight:700; color:var(--accent-terracotta-dark); font-size:0.93rem; margin:0.25rem 0;">
+              ${contactHeaderInfo}
+            </div>
+            <div class="record-item-note">${renderDualText(ct.details)}</div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    /**
+     * 6. INTERACTIVE CONTROLLERS (Language Switch, Bilingual Toggle, SOS Mode, Edit Modal)
+     */
+    function switchLanguage(langCode) {
+      currentLang = langCode;
+      document.documentElement.lang = langCode;
+
+      document.querySelectorAll('.lang-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.getAttribute('data-lang') === langCode);
+      });
+
+      renderAll();
+      showToast(`已切換語言：${uiDictionary[langCode].appTitle}`);
+    }
+
+    function toggleBilingual() {
+      bilingualMode = !bilingualMode;
+      document.body.classList.toggle('hide-bilingual', !bilingualMode);
+      const btn = document.getElementById('btn-bilingual');
+      btn.classList.toggle('active-toggle', bilingualMode);
+      renderAll();
+    }
+
+    function toggleSOSMode() {
+      sosMode = !sosMode;
+      document.body.classList.toggle('sos-mode', sosMode);
+      const btn = document.getElementById('btn-sos');
+      btn.classList.toggle('active-sos', sosMode);
+      showToast(sosMode ? '🚨 已開啟急診重點檢視模式（僅顯示關鍵救命資訊）' : '已恢復完整病歷檢視模式');
+    }
+
+    function openEditModal() {
+      const profile = getActiveProfile();
+      document.getElementById('input-name').value = profile.name;
+      document.getElementById('input-dob').value = profile.dob;
+      document.getElementById('input-blood').value = profile.bloodType;
+      document.getElementById('input-passport').value = profile.passport;
+      document.getElementById('input-height').value = profile.heightCm;
+      document.getElementById('input-weight').value = profile.weightKg;
+      document.getElementById('input-ice-name').value = profile.iceName;
+      document.getElementById('input-ice-phone').value = profile.icePhone;
+      document.getElementById('edit-modal').classList.add('open');
+    }
+
+    function closeEditModal() {
+      document.getElementById('edit-modal').classList.remove('open');
+    }
+
+    function saveCustomData() {
+      const updated = {
+        name: document.getElementById('input-name').value.trim() || defaultPatientProfile.name,
+        dob: document.getElementById('input-dob').value.trim() || defaultPatientProfile.dob,
+        bloodType: document.getElementById('input-blood').value.trim() || defaultPatientProfile.bloodType,
+        passport: document.getElementById('input-passport').value.trim() || defaultPatientProfile.passport,
+        heightCm: document.getElementById('input-height').value.trim() || defaultPatientProfile.heightCm,
+        weightKg: document.getElementById('input-weight').value.trim() || defaultPatientProfile.weightKg,
+        iceName: document.getElementById('input-ice-name').value.trim() || defaultPatientProfile.iceName,
+        icePhone: document.getElementById('input-ice-phone').value.trim() || defaultPatientProfile.icePhone
+      };
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+      } catch (e) {
+        console.warn('Could not save to localStorage:', e);
+      }
+      closeEditModal();
+      renderAll();
+      showToast('✅ 個人識別與緊急聯絡資料已儲存！');
+    }
+
+    function resetCustomData() {
+      try {
+        localStorage.removeItem(STORAGE_KEY);
+      } catch (e) {}
+      closeEditModal();
+      renderAll();
+      showToast('已還原為預設病歷範例');
+    }
+
+    function exportMedicalJSON() {
+      const exportPayload = {
+        exportedAt: new Date().toISOString(),
+        patientProfile: getActiveProfile(),
+        clinicalRecord: clinicalRecordData
+      };
+      const blob = new Blob([JSON.stringify(exportPayload, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'portable_medical_record_backup.json';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showToast('⬇ 已匯出 JSON 病歷備份檔');
+    }
+
+    let toastTimer = null;
+    function showToast(message) {
+      const toast = document.getElementById('toast');
+      toast.textContent = message;
+      toast.classList.add('show');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => {
+        toast.classList.remove('show');
+      }, 2800);
+    }
+
+    // Initialize on load
+    window.addEventListener('DOMContentLoaded', () => {
+      renderAll();
+    });
+  </script>
+</body>
+</html>
